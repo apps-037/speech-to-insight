@@ -43,15 +43,17 @@ model on a test set with no training at all.
 ```
 src/fetch_ami.py           # AMI: stream one meeting from HF, stitch clips into a .wav
 src/transcribe.py          # Whisper (faster-whisper, base) audio → transcript .txt
+src/summarize.py           # transcript .txt → summary .txt (the deliverable)
 src/qmsum_prep.py          # [planned] QMSum JSON → (text, summary) training pairs
 src/train_summarizer.py    # [planned] fine-tune distilBART/T5 on QMSum
-src/summarize.py           # [planned] transcript .txt → summary .txt (deliverable)
 src/evaluate_summary.py    # [planned] ROUGE, pretrained vs fine-tuned
+tests/test_summarize.py    # unit tests for the chunker
 notebooks/finetune.ipynb   # [planned] Colab GPU training run
 data/audio/                # AMI .wav files (gitignored)
 data/transcripts/          # Whisper transcripts
 data/reference/            # clean human reference transcripts (for error analysis)
-data/summaries/            # [planned] summary outputs (gitignored)
+data/qmsum/                # cloned QMSum dataset (gitignored)
+data/summaries/            # summary outputs (gitignored)
 models/                    # [planned] fine-tuned checkpoint (gitignored — too large)
 ```
 
@@ -65,27 +67,33 @@ models/                    # [planned] fine-tuned checkpoint (gitignored — too
 - Transcribed a real AMI meeting (EN2001a) end to end; clean reference transcript
   stored alongside it for the error analysis.
 
-**In progress (summarization — design locked):**
-- **Model:** `sshleifer/distilbart-cnn-12-6`, fine-tuned on QMSum. Debug the training
-  loop first on `t5-small` + a tiny subset, then do the real fine-tune on Colab's
-  free T4 GPU. (Mac CPU is too slow for the full run.)
-- **Input/output:** transcript `.txt` (single unlabeled text blob, verified from the
-  real EN2001a Whisper output) → summary `.txt` (~5–6 sentences).
-- **Long transcripts:** fixed-size ~800-token chunking, summarize each chunk, then an
-  overall pass. The chunker is a pluggable function so topic-segmentation boundaries
-  can replace fixed windows later with no rewrite.
-- **Data prep:** QMSum meeting text → general summary, with speaker tags stripped so
+**Done (summarization — pretrained baseline):**
+- `src/summarize.py`: transcript `.txt` → summary `.txt`. Map-reduce over
+  token-bounded chunks (chunk → summarize → recursively reduce to one summary), so
+  arbitrarily long meetings fit the model. The chunker is a pure, unit-tested
+  function (`tests/test_summarize.py`) that a topic-segmentation boundary function
+  can replace later with no rewrite.
+- Verified end to end on the real EN2001a Whisper transcript (19k tokens → 26 chunks
+  → one summary) using pretrained `sshleifer/distilbart-cnn-12-6`. This is the
+  **"before" baseline** — output is rough because the model was trained on news, not
+  meetings; fine-tuning on QMSum is what improves it.
+- QMSum dataset cloned to `data/qmsum/` (splits at `data/ALL/jsonl/`).
+
+**Next (summarization — fine-tuning):**
+- `src/qmsum_prep.py`: QMSum meeting text → general summary, speaker tags stripped so
   training matches the unlabeled blob seen at inference.
-- **Evaluation:** ROUGE on the QMSum test split, pretrained baseline vs fine-tuned,
-  to demonstrate the fine-tuning effect.
+- `src/train_summarizer.py`: fine-tune (debug on `t5-small` locally, real run on
+  Colab's free T4 GPU — Mac CPU too slow for the full fine-tune).
+- `src/evaluate_summary.py`: ROUGE on the QMSum test split, pretrained baseline vs
+  fine-tuned, to demonstrate the fine-tuning effect.
 
 ## Setup
 
-Use Python 3.12.
+Use Python 3.11 or 3.12 (not 3.14 — it breaks the ML libraries).
 
 ```bash
-python3.12 -m venv venv312
-source venv312/bin/activate
+python3.11 -m venv venv        # or: python3.12 -m venv venv312
+source venv/bin/activate
 pip install --upgrade pip
 pip install faster-whisper "datasets<3.0" soundfile numpy
 # summarization (added as that component lands):

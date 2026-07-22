@@ -24,12 +24,6 @@ import sys
 
 import torch
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-from transformers.utils import logging as hf_logging
-
-# We deliberately encode the full (very long) transcript only to split it into
-# chunks; the model itself only ever sees chunk-sized input. Silence the
-# resulting "sequence longer than 1024" tokenizer warning to keep output clean.
-hf_logging.set_verbosity_error()
 
 DEFAULT_MODEL = "sshleifer/distilbart-cnn-12-6"
 
@@ -38,7 +32,7 @@ def chunk_by_tokens(text, tokenizer, max_tokens=800, overlap=50):
     """Split `text` into chunks of at most `max_tokens` tokens.
 
     Returns a list of decoded string chunks with a small token overlap between
-    consecutive chunks. Pure function of (text, tokenizer) — unit-testable.
+    consecutive chunks. Pure function of (text, tokenizer) - unit-testable.
     """
     ids = tokenizer.encode(text, add_special_tokens=False)
     if not ids:
