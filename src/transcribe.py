@@ -21,6 +21,7 @@ def transcribe(audio_path):
 
     # Save transcript
     base = os.path.splitext(os.path.basename(audio_path))[0]
+    os.makedirs("data/transcripts", exist_ok=True)
     out_path = f"data/transcripts/{base}.txt"
     with open(out_path, "w") as f:
         f.write(" ".join(full_text).strip())

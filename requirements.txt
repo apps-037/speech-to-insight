@@ -1,5 +1,7 @@
 anyio==4.14.2
 av==18.0.0
+datasets>=2.19.0
+soundfile>=0.12.1
 certifi==2026.6.17
 click==8.4.2
 ctranslate2==4.8.1
