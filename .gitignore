@@ -1,8 +1,12 @@
+venv/
 venv312/
 data/audio/
+data/qmsum/
+data/summaries/
 *.wav
 *.pt
 *.bin
+models/
 __pycache__/
+*.pyc
 .DS_Store
-EOF
