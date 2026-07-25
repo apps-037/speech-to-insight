@@ -44,9 +44,9 @@ model on a test set with no training at all.
 src/fetch_ami.py           # AMI: stream one meeting from HF, stitch clips into a .wav
 src/transcribe.py          # Whisper (faster-whisper, base) audio → transcript .txt
 src/summarize.py           # transcript .txt → summary .txt (the deliverable)
-src/qmsum_prep.py          # [planned] QMSum JSON → (text, summary) training pairs
+src/qmsum_prep.py          # QMSum JSON → (input, target) summary pairs
 src/train_summarizer.py    # [planned] fine-tune distilBART/T5 on QMSum
-src/evaluate_summary.py    # [planned] ROUGE, pretrained vs fine-tuned
+src/evaluate_summary.py    # ROUGE on QMSum, pretrained vs fine-tuned
 tests/test_summarize.py    # unit tests for the chunker
 notebooks/finetune.ipynb   # [planned] Colab GPU training run
 data/audio/                # AMI .wav files (gitignored)
@@ -80,15 +80,23 @@ models/                    # [planned] fine-tuned checkpoint (gitignored - too l
   **"before" baseline** - output is rough because the model was trained on news, not
   meetings; fine-tuning on QMSum is what improves it.
 - QMSum dataset cloned to `data/qmsum/` (splits at `data/ALL/jsonl/`).
+- `src/qmsum_prep.py`: builds (input, target) pairs from QMSum general queries -
+  query-prefixed, speaker labels stripped to match the Whisper blob. 162 / 35 / 37
+  train / val / test pairs.
+- `src/evaluate_summary.py`: ROUGE-1/2/L on the QMSum test split. Pretrained
+  distilBART **baseline** (the "before"):
+
+  | Metric  | Baseline (pretrained) |
+  | ------- | --------------------- |
+  | ROUGE-1 | 0.2322                |
+  | ROUGE-2 | 0.0475                |
+  | ROUGE-L | 0.1454                |
 
 **Next (summarization - fine-tuning):**
 
-- `src/qmsum_prep.py`: QMSum meeting text → general summary, speaker tags stripped so
-  training matches the unlabeled blob seen at inference.
-- `src/train_summarizer.py`: fine-tune (debug on `t5-small` locally, real run on
-  Colab's free T4 GPU - Mac CPU too slow for the full fine-tune).
-- `src/evaluate_summary.py`: ROUGE on the QMSum test split, pretrained baseline vs
-  fine-tuned, to demonstrate the fine-tuning effect.
+- `src/train_summarizer.py`: fine-tune on QMSum (debug on `t5-small` locally, real
+  run on Colab's free T4 GPU - Mac CPU too slow for the full fine-tune), then re-run
+  `evaluate_summary.py` on the fine-tuned model for the "after" numbers.
 
 ## Setup
 
