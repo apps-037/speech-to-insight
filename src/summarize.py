@@ -25,7 +25,11 @@ import sys
 import torch
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-DEFAULT_MODEL = "sshleifer/distilbart-cnn-12-6"
+# Prefer the locally fine-tuned checkpoint if present; else the pretrained model.
+FINETUNED_DIR = "models/distilbart-qmsum"
+PRETRAINED_MODEL = "sshleifer/distilbart-cnn-12-6"
+DEFAULT_MODEL = FINETUNED_DIR if os.path.isdir(FINETUNED_DIR) else PRETRAINED_MODEL
+DEFAULT_QUERY = "Summarize the whole meeting."
 
 
 def chunk_by_tokens(text, tokenizer, max_tokens=800, overlap=50):
@@ -51,8 +55,14 @@ def chunk_by_tokens(text, tokenizer, max_tokens=800, overlap=50):
 
 
 def summarize_chunk(text, model, tokenizer, device, max_input=1024,
-                    max_summary=160, min_summary=30):
-    """Summarize a single chunk that already fits (roughly) in the model."""
+                    max_summary=160, min_summary=30, query=None):
+    """Summarize a single chunk that already fits (roughly) in the model.
+
+    If `query` is given it is prepended — the fine-tuned model was trained on
+    query-prefixed inputs, so this keeps train and inference consistent.
+    """
+    if query:
+        text = f"{query} {text}"
     inputs = tokenizer(text, return_tensors="pt", truncation=True,
                        max_length=max_input).to(device)
     with torch.no_grad():
@@ -68,7 +78,7 @@ def summarize_chunk(text, model, tokenizer, device, max_input=1024,
 
 
 def summarize_document(text, model, tokenizer, device, chunk_tokens=800,
-                       max_input=1024, max_summary=160, min_summary=30):
+                       max_input=1024, max_summary=160, min_summary=30, query=None):
     """Map-reduce summarization for arbitrarily long text.
 
     Summarize each chunk (map), then recurse on the joined summaries (reduce)
@@ -78,14 +88,14 @@ def summarize_document(text, model, tokenizer, device, chunk_tokens=800,
     chunks = chunk_by_tokens(text, tokenizer, max_tokens=chunk_tokens)
     if len(chunks) <= 1:
         return summarize_chunk(chunks[0] if chunks else text, model, tokenizer,
-                               device, max_input, max_summary, min_summary)
+                               device, max_input, max_summary, min_summary, query)
     partials = [
-        summarize_chunk(c, model, tokenizer, device, max_input, max_summary, min_summary)
+        summarize_chunk(c, model, tokenizer, device, max_input, max_summary, min_summary, query)
         for c in chunks
     ]
     print(f"  summarized {len(chunks)} chunks; reducing...")
     return summarize_document(" ".join(partials), model, tokenizer, device,
-                              chunk_tokens, max_input, max_summary, min_summary)
+                              chunk_tokens, max_input, max_summary, min_summary, query)
 
 
 def load_model(model_name, device):
@@ -103,6 +113,8 @@ def main():
     ap.add_argument("--out", default=None, help="output path (default data/summaries/<name>.txt)")
     ap.add_argument("--max-summary", type=int, default=160)
     ap.add_argument("--min-summary", type=int, default=30)
+    ap.add_argument("--query", default=DEFAULT_QUERY,
+                    help="query prefix matching fine-tuning; pass '' to disable")
     ap.add_argument("--device", default=None, help="cpu | mps | cuda (default: auto)")
     args = ap.parse_args()
 
@@ -127,7 +139,8 @@ def main():
     print("Summarizing...")
     summary = summarize_document(text, model, tokenizer, device,
                                  max_summary=args.max_summary,
-                                 min_summary=args.min_summary)
+                                 min_summary=args.min_summary,
+                                 query=(args.query or None))
 
     out_path = args.out or f"data/summaries/{os.path.splitext(os.path.basename(args.transcript))[0]}.txt"
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
