@@ -68,35 +68,41 @@ models/                    # [planned] fine-tuned checkpoint (gitignored - too l
 - Transcribed a real AMI meeting (EN2001a) end to end; clean reference transcript
   stored alongside it for the error analysis.
 
-**Done (summarization - pretrained baseline):**
+**Done (summarization - fine-tuned):**
 
 - `src/summarize.py`: transcript `.txt` → summary `.txt`. Map-reduce over
   token-bounded chunks (chunk → summarize → recursively reduce to one summary), so
   arbitrarily long meetings fit the model. The chunker is a pure, unit-tested
   function (`tests/test_summarize.py`) that a topic-segmentation boundary function
-  can replace later with no rewrite.
-- Verified end to end on the real EN2001a Whisper transcript (19k tokens → 26 chunks
-  → one summary) using pretrained `sshleifer/distilbart-cnn-12-6`. This is the
-  **"before" baseline** - output is rough because the model was trained on news, not
-  meetings; fine-tuning on QMSum is what improves it.
-- QMSum dataset cloned to `data/qmsum/` (splits at `data/ALL/jsonl/`).
+  can replace later with no rewrite. Auto-uses the fine-tuned checkpoint when present
+  and prepends the same query used in training.
 - `src/qmsum_prep.py`: builds (input, target) pairs from QMSum general queries -
   query-prefixed, speaker labels stripped to match the Whisper blob. 162 / 35 / 37
-  train / val / test pairs.
-- `src/evaluate_summary.py`: ROUGE-1/2/L on the QMSum test split. Pretrained
-  distilBART **baseline** (the "before"):
+  train / val / test pairs. QMSum cloned to `data/qmsum/` (gitignored).
+- `src/train_summarizer.py`: real `Seq2SeqTrainer` fine-tuning loop. Fine-tuned
+  `distilbart-cnn-12-6` for 3 epochs (~12 min on the Mac's MPS GPU), saved to
+  `models/distilbart-qmsum`.
+- `src/evaluate_summary.py`: ROUGE-1/2/L on the QMSum test split, pretrained vs
+  fine-tuned:
 
-  | Metric  | Baseline (pretrained) |
-  | ------- | --------------------- |
-  | ROUGE-1 | 0.2322                |
-  | ROUGE-2 | 0.0475                |
-  | ROUGE-L | 0.1454                |
+  | Metric  | Baseline (pretrained) | Fine-tuned | Change |
+  | ------- | --------------------- | ---------- | ------ |
+  | ROUGE-1 | 0.2322                | 0.3809     | +64%   |
+  | ROUGE-2 | 0.0475                | 0.1126     | +137%  |
+  | ROUGE-L | 0.1454                | 0.2246     | +54%   |
 
-**Next (summarization - fine-tuning):**
+  Confirmed qualitatively on the real EN2001a Whisper transcript: the fine-tuned
+  model gives a coherent, structured meeting summary where the pretrained baseline
+  gave disjointed news-style text.
 
-- `src/train_summarizer.py`: fine-tune on QMSum (debug on `t5-small` locally, real
-  run on Colab's free T4 GPU - Mac CPU too slow for the full fine-tune), then re-run
-  `evaluate_summary.py` on the fine-tuned model for the "after" numbers.
+**Next:**
+
+- Swap the fixed chunker for the teammate's topic-segmentation boundaries
+  (summary per topic + overall) once it lands.
+- ASR-error analysis: run the summarizer on clean reference vs Whisper transcripts
+  of the same meetings and compare (the project's headline analysis).
+- Optional: enlarge training data with QMSum specific-query pairs; move the
+  fine-tune to Colab if we scale up.
 
 ## Setup
 
