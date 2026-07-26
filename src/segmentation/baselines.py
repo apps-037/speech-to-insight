@@ -10,9 +10,9 @@ BiLSTM. Both run on the same cached MiniLM embeddings, so it's apples-to-apples.
     where the dissimilarity exceeds a threshold tuned on validation - the same
     decode rule the trained model uses, so it's a fair comparison.
 
-    python src/seg_baselines.py                # tune block-sim on val, report on test
+    python src/segmentation/baselines.py       # tune block-sim on val, report on test
 
-Needs the val and test caches (src/embed_cache.py --split val / test).
+Needs the val and test caches (src/segmentation/embed.py --split val / test).
 """
 import argparse
 import os
@@ -20,7 +20,7 @@ import os
 import numpy as np
 import torch
 
-from seg_metrics import mean_scores
+from metrics import mean_scores
 
 CACHE_DIR = "data/seg_cache"
 
@@ -29,7 +29,7 @@ def load_cache(split):
     path = os.path.join(CACHE_DIR, f"{split}.pt")
     if not os.path.exists(path):
         raise FileNotFoundError(
-            f"{path} not found - run: python src/embed_cache.py --split {split}")
+            f"{path} not found - run: python src/segmentation/embed.py --split {split}")
     return torch.load(path)
 
 

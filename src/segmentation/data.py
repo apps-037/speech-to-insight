@@ -11,7 +11,7 @@ sorted, de-duplicated span-start indices as boundaries is a deliberate
 simplification (the standard one for this dataset). Run this file directly to
 eyeball the labels for one meeting before trusting them:
 
-    python src/qmsum_seg_prep.py --split val --show 0
+    python src/segmentation/data.py --split val --show 0
 """
 import argparse
 import json

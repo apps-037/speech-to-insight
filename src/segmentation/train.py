@@ -1,13 +1,13 @@
 """
 Train the BiLSTM topic segmenter on cached QMSum embeddings.
 
-Run src/embed_cache.py for the train and val splits first. Training operates on
-precomputed vectors, so it finishes in a couple of minutes on CPU. Each epoch we
-tune the decode threshold on validation (the fixed 0.5 threshold over-segments
-because boundaries are rare) and keep the best checkpoint - weights plus the
-chosen threshold - at models/segmenter.pt.
+Run src/segmentation/embed.py for the train and val splits first. Training
+operates on precomputed vectors, so it finishes in a couple of minutes on CPU.
+Each epoch we tune the decode threshold on validation (the fixed 0.5 threshold
+over-segments because boundaries are rare) and keep the best checkpoint -
+weights plus the chosen threshold - at models/segmenter.pt.
 
-    python src/train_segmenter.py
+    python src/segmentation/train.py
 """
 import argparse
 import os
@@ -16,8 +16,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from segmenter import BiLSTMSegmenter
-from seg_metrics import mean_scores
+from model import BiLSTMSegmenter
+from metrics import mean_scores
 
 CACHE_DIR = "data/seg_cache"
 CKPT = "models/segmenter.pt"
@@ -27,7 +27,7 @@ def load_cache(split):
     path = os.path.join(CACHE_DIR, f"{split}.pt")
     if not os.path.exists(path):
         raise FileNotFoundError(
-            f"{path} not found - run: python src/embed_cache.py --split {split}")
+            f"{path} not found - run: python src/segmentation/embed.py --split {split}")
     return torch.load(path)
 
 

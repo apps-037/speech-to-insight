@@ -1,21 +1,21 @@
 """
 Evaluate the trained BiLSTM segmenter on the QMSum test split.
 
-Loads the checkpoint from train_segmenter.py (weights + the decode threshold
-chosen on validation) and reports Pk / WindowDiff on test - the numbers for the
-report - alongside the never-split baseline for context.
+Loads the checkpoint from train.py (weights + the decode threshold chosen on
+validation) and reports Pk / WindowDiff on test - the numbers for the report -
+alongside the never-split baseline for context.
 
-    python src/evaluate_segmenter.py
+    python src/segmentation/evaluate.py
 
-Needs the test cache (src/embed_cache.py --split test).
+Needs the test cache (src/segmentation/embed.py --split test).
 """
 import argparse
 import os
 
 import torch
 
-from segmenter import BiLSTMSegmenter
-from seg_metrics import mean_scores
+from model import BiLSTMSegmenter
+from metrics import mean_scores
 
 CACHE_DIR = "data/seg_cache"
 CKPT = "models/segmenter.pt"
@@ -25,7 +25,7 @@ def load_cache(split):
     path = os.path.join(CACHE_DIR, f"{split}.pt")
     if not os.path.exists(path):
         raise FileNotFoundError(
-            f"{path} not found - run: python src/embed_cache.py --split {split}")
+            f"{path} not found - run: python src/segmentation/embed.py --split {split}")
     return torch.load(path)
 
 
@@ -37,7 +37,7 @@ def main():
     args = ap.parse_args()
 
     if not os.path.exists(args.ckpt):
-        raise FileNotFoundError(f"{args.ckpt} not found - run: python src/train_segmenter.py")
+        raise FileNotFoundError(f"{args.ckpt} not found - run: python src/segmentation/train.py")
     ckpt = torch.load(args.ckpt, map_location=args.device)
     model = BiLSTMSegmenter(hidden=ckpt["hidden"]).to(args.device)
     model.load_state_dict(ckpt["model"])

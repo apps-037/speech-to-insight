@@ -12,9 +12,9 @@ This is the only GPU-worth-it part of segmentation. Run it once (locally on
 Apple-Silicon MPS, or on a Colab GPU and download the cache), then every other
 script trains/evaluates on the cached vectors in seconds on CPU.
 
-    python src/embed_cache.py --split train
-    python src/embed_cache.py --split val
-    python src/embed_cache.py --split test
+    python src/segmentation/embed.py --split train
+    python src/segmentation/embed.py --split val
+    python src/segmentation/embed.py --split test
 
 Writes data/seg_cache/<split>.pt = list of dicts
     {"emb": FloatTensor[T, 384], "labels": LongTensor[T]}
@@ -27,7 +27,7 @@ import torch
 import torch.nn.functional as F
 from transformers import AutoModel, AutoTokenizer
 
-from qmsum_seg_prep import iter_labeled, DEFAULT_QMSUM_DIR
+from data import iter_labeled, DEFAULT_QMSUM_DIR
 
 ENCODER = "sentence-transformers/all-MiniLM-L6-v2"
 CACHE_DIR = "data/seg_cache"
