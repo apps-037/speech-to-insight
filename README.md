@@ -41,20 +41,28 @@ model on a test set with no training at all.
 ## Repository layout
 
 ```
-src/fetch_ami.py           # AMI: stream one meeting from HF, stitch clips into a .wav
-src/transcribe.py          # Whisper (faster-whisper, base) audio → transcript .txt
-src/summarize.py           # transcript .txt → summary .txt (the deliverable)
-src/qmsum_prep.py          # QMSum JSON → (input, target) summary pairs
-src/train_summarizer.py    # [planned] fine-tune distilBART/T5 on QMSum
-src/evaluate_summary.py    # ROUGE on QMSum, pretrained vs fine-tuned
-tests/test_summarize.py    # unit tests for the chunker
-notebooks/finetune.ipynb   # [planned] Colab GPU training run
-data/audio/                # AMI .wav files (gitignored)
-data/transcripts/          # Whisper transcripts
-data/reference/            # clean human reference transcripts (for error analysis)
-data/qmsum/                # cloned QMSum dataset (gitignored)
-data/summaries/            # summary outputs (gitignored)
-models/                    # [planned] fine-tuned checkpoint (gitignored - too large)
+src/fetch_ami.py              # AMI: stream one meeting from HF, stitch clips into a .wav
+src/transcribe.py             # Whisper (faster-whisper, base) audio → transcript .txt
+
+src/segmentation/             # topic segmentation (BiLSTM boundary classifier)
+  data.py  embed.py  model.py #   data prep · MiniLM sentence embeddings · BiLSTM
+  metrics.py  baselines.py    #   Pk/WindowDiff · TextTiling baseline
+  train.py  evaluate.py       #   training · evaluation
+  segment_transcript.py       #   inference entry: transcript → topic sections
+
+src/summarization/            # summarization (fine-tuned distilBART)
+  data.py                     #   QMSum JSON → (input, target) pairs
+  train.py                    #   fine-tune distilBART on QMSum
+  evaluate.py                 #   ROUGE, pretrained vs fine-tuned
+  summarize.py                #   inference entry: transcript → summary
+
+tests/test_summarize.py       # unit tests for the summarization chunker
+data/audio/                   # AMI .wav files (gitignored)
+data/transcripts/             # Whisper transcripts
+data/reference/               # clean human reference transcripts (for error analysis)
+data/qmsum/                   # cloned QMSum dataset (gitignored)
+data/summaries/               # summary outputs (gitignored)
+models/                       # trained checkpoints (gitignored - too large)
 ```
 
 ## Progress
@@ -70,19 +78,19 @@ models/                    # [planned] fine-tuned checkpoint (gitignored - too l
 
 **Done (summarization - fine-tuned):**
 
-- `src/summarize.py`: transcript `.txt` → summary `.txt`. Map-reduce over
+- `src/summarization/summarize.py`: transcript `.txt` → summary `.txt`. Map-reduce over
   token-bounded chunks (chunk → summarize → recursively reduce to one summary), so
   arbitrarily long meetings fit the model. The chunker is a pure, unit-tested
   function (`tests/test_summarize.py`) that a topic-segmentation boundary function
   can replace later with no rewrite. Auto-uses the fine-tuned checkpoint when present
   and prepends the same query used in training.
-- `src/qmsum_prep.py`: builds (input, target) pairs from QMSum general queries -
+- `src/summarization/data.py`: builds (input, target) pairs from QMSum general queries -
   query-prefixed, speaker labels stripped to match the Whisper blob. 162 / 35 / 37
   train / val / test pairs. QMSum cloned to `data/qmsum/` (gitignored).
-- `src/train_summarizer.py`: real `Seq2SeqTrainer` fine-tuning loop. Fine-tuned
+- `src/summarization/train.py`: real `Seq2SeqTrainer` fine-tuning loop. Fine-tuned
   `distilbart-cnn-12-6` for 3 epochs (~12 min on the Mac's MPS GPU), saved to
   `models/distilbart-qmsum`.
-- `src/evaluate_summary.py`: ROUGE-1/2/L on the QMSum test split, pretrained vs
+- `src/summarization/evaluate.py`: ROUGE-1/2/L on the QMSum test split, pretrained vs
   fine-tuned:
 
   | Metric  | Baseline (pretrained) | Fine-tuned | Change |
@@ -113,8 +121,8 @@ python3.11 -m venv venv        # or: python3.12 -m venv venv312
 source venv/bin/activate
 pip install --upgrade pip
 pip install faster-whisper "datasets<3.0" soundfile numpy
-# summarization (added as that component lands):
-pip install torch transformers evaluate rouge-score sentencepiece accelerate nltk
+# summarization:
+pip install torch transformers datasets accelerate rouge-score sentencepiece
 ```
 
 Run the speech-to-text pipeline:
