@@ -2,19 +2,18 @@
 Fine-tune a seq2seq summarizer on QMSum.
 
 Trains with a real forward/loss/backprop loop (HuggingFace Seq2SeqTrainer) on the
-QMSum general-summary pairs from qmsum_prep.py, then saves the fine-tuned model.
-Evaluate before/after with src/evaluate_summary.py.
+QMSum general-summary pairs from data.py, then saves the fine-tuned model.
+Evaluate before/after with src/summarization/evaluate.py.
 
     # quick loop check (tiny, fast):
-    python src/train_summarizer.py --model t5-small --limit 8 --epochs 1 \
+    python src/summarization/train.py --model t5-small --limit 8 --epochs 1 \
         --max-input 512 --output-dir models/debug
 
     # real run:
-    python src/train_summarizer.py            # distilBART, 3 epochs -> models/distilbart-qmsum
+    python src/summarization/train.py         # distilBART, 3 epochs -> models/distilbart-qmsum
 """
 import argparse
 import os
-import sys
 
 from datasets import Dataset
 from transformers import (
@@ -26,8 +25,7 @@ from transformers import (
 )
 from transformers.utils import logging as hf_logging
 
-sys.path.insert(0, os.path.dirname(__file__))
-from qmsum_prep import load_qmsum_pairs  # noqa: E402
+from data import load_qmsum_pairs
 
 hf_logging.set_verbosity_error()
 DEFAULT_MODEL = "sshleifer/distilbart-cnn-12-6"

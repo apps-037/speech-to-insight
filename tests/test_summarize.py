@@ -6,7 +6,7 @@ fast and needs no model download. Run:  python tests/test_summarize.py
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "summarization"))
 from summarize import chunk_by_tokens  # noqa: E402
 
 

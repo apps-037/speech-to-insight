@@ -13,8 +13,8 @@ QMSum meetings are far longer than the model's input window; truncation to the
 model max is handled at train/inference time (standard QMSum + BART practice).
 
 Usage:
-    python src/qmsum_prep.py            # print split stats
-    python src/qmsum_prep.py --dump     # also write data/qmsum_processed/*.jsonl
+    python src/summarization/data.py            # print split stats
+    python src/summarization/data.py --dump     # also write data/qmsum_processed/*.jsonl
 """
 import argparse
 import json

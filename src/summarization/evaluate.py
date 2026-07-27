@@ -5,22 +5,19 @@ Runs the model on QMSum inputs (truncated to the model's max input, standard
 QMSum + BART practice) and reports ROUGE-1/2/L F-measure against the reference
 summaries. Use it to compare the pretrained baseline vs. the fine-tuned model.
 
-    python src/evaluate_summary.py                    # pretrained baseline
-    python src/evaluate_summary.py --model models/ft  # fine-tuned checkpoint
-    python src/evaluate_summary.py --limit 20         # quick subset
+    python src/summarization/evaluate.py                    # pretrained baseline
+    python src/summarization/evaluate.py --model models/ft  # fine-tuned checkpoint
+    python src/summarization/evaluate.py --limit 20         # quick subset
 """
 import argparse
-import os
-import sys
 
 import torch
 from rouge_score import rouge_scorer
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from transformers.utils import logging as hf_logging
 
-sys.path.insert(0, os.path.dirname(__file__))
-from qmsum_prep import load_qmsum_pairs  # noqa: E402
-from summarize import summarize_chunk  # noqa: E402  (reuse single-chunk summarizer)
+from data import load_qmsum_pairs
+from summarize import summarize_chunk  # reuse single-chunk summarizer
 
 hf_logging.set_verbosity_error()
 DEFAULT_MODEL = "sshleifer/distilbart-cnn-12-6"

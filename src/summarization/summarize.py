@@ -15,8 +15,8 @@ so a topic-segmentation boundary function can replace it later without changing
 the rest of the code.
 
 Usage:
-    python src/summarize.py data/transcripts/EN2001a.txt
-    python src/summarize.py data/transcripts/EN2001a.txt --model <hf-name-or-path>
+    python src/summarization/summarize.py data/transcripts/EN2001a.txt
+    python src/summarization/summarize.py data/transcripts/EN2001a.txt --model <hf-name-or-path>
 """
 import argparse
 import os
