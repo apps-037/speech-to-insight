@@ -16,7 +16,7 @@ on (a) clean human transcripts and (b) Whisper transcripts of the same meetings.
 
 ## Scope
 
-Two downstream tasks: **topic segmentation** and **summarization**. (Intent
+Two downstream tasks: **topic segmentation** and **summarization**. (Intent 
 detection was an option in the project idea; we deliberately skipped it.)
 
 Per the professor's ruling, we do **not** train from scratch. Fine-tuning a model
