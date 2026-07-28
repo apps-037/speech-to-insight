@@ -46,7 +46,7 @@ src/transcribe.py             # Whisper (faster-whisper, base) audio → transcr
 
 src/segmentation/             # topic segmentation (BiLSTM boundary classifier)
   data.py  embed.py  model.py #   data prep · MiniLM sentence embeddings · BiLSTM
-  metrics.py  baselines.py    #   Pk/WindowDiff · TextTiling baseline
+  metrics.py  baselines.py    #   Pk/WindowDiff · never-split & embedding-similarity baselines
   train.py  evaluate.py       #   training · evaluation
   segment_transcript.py       #   inference entry: transcript → topic sections
 
@@ -55,6 +55,9 @@ src/summarization/            # summarization (fine-tuned distilBART)
   train.py                    #   fine-tune distilBART on QMSum
   evaluate.py                 #   ROUGE, pretrained vs fine-tuned
   summarize.py                #   inference entry: transcript → summary
+
+src/pipeline.py               # end-to-end: transcript → segments → per-section + overall summary
+src/error_analysis.py         # ASR-error propagation: clean vs Whisper (WER, segmentation & summary drift)
 
 tests/test_summarize.py       # unit tests for the summarization chunker
 data/audio/                   # AMI .wav files (gitignored)
@@ -75,6 +78,27 @@ models/                       # trained checkpoints (gitignored - too large)
 - `src/transcribe.py`: runs Whisper on an audio file, saves the transcript.
 - Transcribed a real AMI meeting (EN2001a) end to end; clean reference transcript
   stored alongside it for the error analysis.
+
+**Done (topic segmentation - trained):**
+
+- `src/segmentation/data.py`: QMSum `topic_list` spans → per-turn 0/1 boundary
+  labels (boundaries are only ~1% of turns - QMSum topics are coarse).
+- `src/segmentation/embed.py`: caches frozen MiniLM (all-MiniLM-L6-v2) sentence
+  embeddings, so training/eval run in seconds on CPU.
+- `src/segmentation/model.py`: a BiLSTM boundary classifier - the model we build and
+  train ourselves (the frozen embeddings are only input features).
+- `src/segmentation/train.py` + `evaluate.py`: weighted-BCE training with validation
+  threshold tuning; Pk/WindowDiff on the QMSum test split. The trained model beats
+  both baselines:
+
+  | Method (QMSum test)  | Pk ↓  | WindowDiff ↓ |
+  | -------------------- | ----- | ------------ |
+  | never-split baseline | 0.355 | 0.357        |
+  | embedding-similarity | 0.381 | 0.408        |
+  | **BiLSTM (ours)**    | 0.344 | 0.350        |
+
+- `src/segmentation/segment_transcript.py`: inference entry - splits a transcript into
+  topic sections (windowed target-count decode).
 
 **Done (summarization - fine-tuned):**
 
@@ -103,14 +127,24 @@ models/                       # trained checkpoints (gitignored - too large)
   model gives a coherent, structured meeting summary where the pretrained baseline
   gave disjointed news-style text.
 
+**Done (end-to-end pipeline + ASR-error analysis):**
+
+- `src/pipeline.py`: wires the two halves - transcript → topic sections → per-section
+  summaries + one overall summary (summarizer used as-is: fine-tuned checkpoint if
+  present, else pretrained). Verified end to end on the EN2001a Whisper transcript.
+- `src/error_analysis.py`: ASR-error propagation, clean reference vs Whisper. Splits
+  both by fixed word-windows (the reference is unpunctuated, Whisper isn't) for a fair
+  comparison. First result on EN2001a: **WER 26.2%** input error, yet segmentation
+  boundaries drift only **~4%** of the meeting length - segmentation is fairly robust
+  to ASR errors. Summary-drift (ROUGE, clean vs Whisper) runs with `--summaries` once
+  the fine-tuned checkpoint is in place.
+
 **Next:**
 
-- Swap the fixed chunker for the teammate's topic-segmentation boundaries
-  (summary per topic + overall) once it lands.
-- ASR-error analysis: run the summarizer on clean reference vs Whisper transcripts
-  of the same meetings and compare (the project's headline analysis).
-- Optional: enlarge training data with QMSum specific-query pairs; move the
-  fine-tune to Colab if we scale up.
+- Run the full pipeline on the fine-tuned checkpoint and complete the summary-drift
+  half of the ASR-error analysis (`error_analysis.py --summaries`).
+- Optional: enlarge training data with QMSum specific-query pairs; move the fine-tune
+  to Colab if we scale up.
 
 ## Setup
 
@@ -123,6 +157,8 @@ pip install --upgrade pip
 pip install faster-whisper "datasets<3.0" soundfile numpy
 # summarization:
 pip install torch transformers datasets accelerate rouge-score sentencepiece
+# segmentation + error analysis:
+pip install nltk jiwer
 ```
 
 Run the speech-to-text pipeline:
@@ -131,6 +167,21 @@ Run the speech-to-text pipeline:
 python src/fetch_ami.py                         # quick 3-min sample
 python src/fetch_ami.py EN2001a --full          # full meeting
 python src/transcribe.py data/audio/EN2001a_sample.wav
+```
+
+Run segmentation, the full pipeline, and the ASR-error analysis:
+
+```bash
+# one-time: cache QMSum embeddings, then train + evaluate the segmenter
+python src/segmentation/embed.py --split train      # also: val / test
+python src/segmentation/train.py
+python src/segmentation/evaluate.py
+
+# end-to-end meeting notes (transcript → sections → summaries)
+python src/pipeline.py data/transcripts/EN2001a.txt --num-sections 8
+
+# ASR-error propagation (clean vs Whisper); add --summaries with the fine-tuned model
+python src/error_analysis.py --num-sections 8
 ```
 
 ## Notes
