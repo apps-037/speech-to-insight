@@ -91,9 +91,13 @@ def decode_boundaries(probs, target_len=40, num_sections=None, min_gap=3,
 
 
 def segment_text(text, model, embedder, device, target_len=40,
-                 num_sections=None, min_gap=3, threshold=None):
-    """transcript text -> (sections, sentences, boundary_indices)."""
-    sents = split_sentences(text)
+                 num_sections=None, min_gap=3, threshold=None, units=None):
+    """transcript text -> (sections, units, boundary_indices).
+
+    `units` lets the caller supply its own unit list (e.g. fixed word-windows
+    for the ASR-error comparison); otherwise the text is split into sentences.
+    """
+    sents = units if units is not None else split_sentences(text)
     if len(sents) <= 1:
         return [text.strip()], sents, [0]
     emb = embedder.encode(sents)

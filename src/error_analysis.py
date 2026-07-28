@@ -45,6 +45,14 @@ def _norm(s):
     return " ".join(re.sub(r"[^\w\s]", " ", s.lower()).split())
 
 
+def split_words(text, per=25):
+    """Split into fixed windows of `per` words - punctuation-agnostic units so
+    the clean (unpunctuated) and Whisper transcripts are compared on equal
+    footing (the AMI reference has no punctuation; Whisper adds it)."""
+    words = text.split()
+    return [" ".join(words[i:i + per]) for i in range(0, len(words), per)] or [text]
+
+
 def try_wer(clean, whisper):
     """WER(clean, whisper) if jiwer is installed, else None."""
     try:
@@ -90,6 +98,8 @@ def main():
     ap.add_argument("--clean", default=CLEAN)
     ap.add_argument("--whisper", default=WHISPER)
     ap.add_argument("--num-sections", type=int, default=8)
+    ap.add_argument("--words-per-unit", type=int, default=25,
+                    help="word-window size for the fixed-unit segmentation comparison")
     ap.add_argument("--seg-ckpt", default=SEG_CKPT)
     ap.add_argument("--device", default=None)
     ap.add_argument("--summaries", action="store_true",
@@ -110,18 +120,21 @@ def main():
     else:
         print(f"INPUT  WER(clean, whisper) = {wer:.3f}  ({wer * 100:.1f}% of words changed)")
 
-    # 2. segmentation drift
-    print("\nsegmenting both transcripts ...")
+    # 2. segmentation drift - fixed word-windows so the clean (unpunctuated) and
+    #    Whisper (punctuated) transcripts are segmented on equal footing.
+    print("\nsegmenting both transcripts (fixed word-windows) ...")
     seg_model = load_segmenter(args.seg_ckpt, device)
     embedder = Embedder(device)
+    cunits = split_words(clean_text, args.words_per_unit)
+    wunits = split_words(whisper_text, args.words_per_unit)
     cs, csent, cb = segment_text(clean_text, seg_model, embedder, device,
-                                 num_sections=args.num_sections)
+                                 num_sections=args.num_sections, units=cunits)
     ws, wsent, wb = segment_text(whisper_text, seg_model, embedder, device,
-                                 num_sections=args.num_sections)
+                                 num_sections=args.num_sections, units=wunits)
     drift = segmentation_drift(cb, len(csent), wb, len(wsent))
-    print(f"SEG    {args.num_sections} sections each")
-    print(f"       clean:   {len(csent)} sentences, boundaries {cb}")
-    print(f"       whisper: {len(wsent)} sentences, boundaries {wb}")
+    print(f"SEG    {args.num_sections} sections each  (units = {args.words_per_unit}-word windows)")
+    print(f"       clean:   {len(csent)} windows, boundaries {cb}")
+    print(f"       whisper: {len(wsent)} windows, boundaries {wb}")
     print(f"       boundary drift = {drift:.3f}  "
           f"(0 = identical splits; ~{drift * 100:.1f}% of the meeting length)")
 
