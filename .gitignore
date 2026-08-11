@@ -3,7 +3,7 @@ venv312/
 data/audio/
 data/qmsum/
 data/qmsum_processed/
-data/summaries/
+data/reference/
 *.wav
 *.pt
 *.bin

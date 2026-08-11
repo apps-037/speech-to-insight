@@ -1,0 +1,30 @@
+================================================================
+MEETING NOTES: EN2001d.txt
+================================================================
+
+OVERALL SUMMARY
+  The whole meeting was about the data and design of the project. First, the team discussed how the summarizer would work. Then, they discussed how to use the graphical interface and make it look like a real-time presentation. Finally, the meeting ended with the discussion about the layout of the player and dialog act. The group also discussed how presentation could be customized to suit the needs of the meeting.
+
+▸ Section 1  (sentences 0-60)
+  The whole meeting was about the interface between the user interface and the graphical display. They discussed how to use the graphical interface and make it look like a real-time presentation. Then, the team talked about how they were special in programming and how they would like to know more about each other. Finally, the meeting ended with a discussion about how the team could improve their performance.
+
+▸ Section 2  (sentences 61-154)
+  The whole meeting was about the data and design of the project. First, the team discussed how the summarizer would work. Then, they discussed how to get the right segments in, put a sliding bar into this so that people see where they are, and then make selections based on a segment. Finally, the meeting ended with the team discussing how to make the project more interactive.
+
+▸ Section 3  (sentences 155-245)
+  The meeting was about the prototype of the prototype, which was presented by the team. The prototype was mainly about how to display different meetings of one group at the beginning of the meeting. The team decided to use a tree view to represent the meetings and the graph to display more information. They also discussed the similarity measure for segments in this window and do it across meetings. Then, the team discussed how they could add a search button and the similarity thing about them. Finally, the meeting ended with the discussion about the layout of the player and dialog act.
+
+▸ Section 4  (sentences 246-374)
+  The whole meeting was about the presentation of the new version of the system. The group also discussed how the presentation could be customized to suit the needs of the meeting. The meeting ended with a discussion about the evaluation method, which the team wanted to use for evaluation purposes. They also discussed the interface, integration and integration, which was only 10% of the time it took for the project to be evaluated.
+
+▸ Section 5  (sentences 375-451)
+  The meeting was mainly about the SNLP project and the DM project. The team discussed how to start an online museum with music, notification, and notification. Then, the team talked about how they could start their own museum project. They also discussed how they should use different tools to start it. The meeting ended with a brief discussion about the future direction of the project.
+
+▸ Section 6  (sentences 452-514)
+  The whole meeting was about the topic settings, which should be continuous and chronological. The group discussed the fusing of the different importance measures. They also discussed the color display and how to use it to display two types of information in two-dimensional space. The meeting ended with a discussion about the future direction of the meeting series and future directions.
+
+▸ Section 7  (sentences 515-613)
+  The whole meeting was about the future of the meeting. The meeting was mainly about the data manager and the summarizer, which was more or less ready to use. The team decided to use three scripts, or two scripts, which load a parameter, which is which file to load, and then it's just there. Then, the team discussed how they could swap-in the current version of the project with three different dials and three different clocks.
+
+▸ Section 8  (sentences 614-670)
+  The meeting was mainly about the components of the remote control. The team discussed how to use the night clock, code, or whatever code it is for this component, and see if we could access those rate things and get notified when they change. Then, the team discussed the summarization of this component and how to make it more intuitive. The meeting ended with a discussion about how the search interact with the rest of the team.

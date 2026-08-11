@@ -1,0 +1,30 @@
+================================================================
+MEETING NOTES: EN2001e.txt
+================================================================
+
+OVERALL SUMMARY
+  The meeting was mainly about the progress of the project and the team's approach to the next phase. The whole meeting was about combining two factors in a relatively simple way, but still that could be justified. The team had a long problem about not finding out why the time thinking up between the relative time in a summarized section and the absolute time didn't correspond. The meeting ended with the implementation of the new model of the dialogue. The group also discussed how to make speech tools work with the speech tool.
+
+▸ Section 1  (sentences 0-15)
+  The meeting was mainly about the progress of the project. The team had a long problem about not finding out why the time thinking up between the relative time in a summarized section and the absolute time didn't correspond and it was some stupid Java thing about if you if you actually if you have two objects, and you say object if you say a equals b. They actually reference to the same thing, so any changes you make to one are made to the other and if you do that around five corners, you lose track of it and you suddenly wonder why that value is zero and it
+
+▸ Section 2  (sentences 16-35)
+  The whole meeting was about the numbers assigned to the dialogue acts. The team discussed how to deal with the problem of having a reference file with the actual real idea and the corresponding number. Then, the team talked about what different people hadn't done and how to make sure they didn't get mistaken with the numbers. The meeting ended with the implementation of the new model of the dialogue.
+
+▸ Section 3  (sentences 36-60)
+  The whole meeting was about combining two factors in a relatively simple way, but still that could be justified. The team then discussed how to make the segment lines a lot bigger and how to improve the summarization of the data. The meeting ended with a new summarization, but the summary was not good enough for the team and they were surprised to see some interesting stuff. The presentation is now two weeks from today and the evaluation is not necessary.
+
+▸ Section 4  (sentences 61-75)
+  The whole meeting was about the user evaluation and the team had to write the report. The meeting ended with a discussion about the design of the remote control. The team discussed how they could design a slide power and a swing component for controlling the length of the summary and another one for merging factors. To be honest, there was no time for the audio component of the dice machines and most of them don't have working sound cards.
+
+▸ Section 5  (sentences 76-96)
+  The meeting was mainly about the technical aspects of the project. The team was trying to find out which dice machines had sound cards and how to find them. They had to have two code versions then one for sound card and one for non sound card machines to test it on. Then the team discussed how they could make it easier to test on non-sound card machines without the sound cards. After that, the team talked about how to make a flag on the clock and try and catch and then if you catch the exception set the flag. The meeting ended with a discussion about the future
+
+▸ Section 6  (sentences 97-130)
+  The whole meeting was devoted to the first meeting of the new project. The team discussed the progress of the project and the team's approach to the next phase. The meeting was mainly about how much utterances needed to be displayed. The threshold was set on the basis of how many utterances occurred on one of the highest ranking. Then, the team discussed how they could add a list of the most probable words that were cured in agreement. Then the team talked about how they should add more buttons to their display. Finally, the meeting ended with a discussion about the future direction of the
+
+▸ Section 7  (sentences 131-142)
+  The whole meeting was about how to evaluate the transcriptions. The team decided to use keywords for each topic segment. They would like to have a single higher-strength utterance as a title. Then they would have to use a dictionary to check out what they would feel like on a word basis. Finally, they discussed the possibility of docking an app for the team to add it in make unless you want to. The meeting ended with a brief discussion about the future direction of the meeting.
+
+▸ Section 8  (sentences 143-161)
+  The whole meeting was focused on the evaluation of the project. Firstly, the team got in touch with the other group and asked them to do a joint evaluation. Then, they discussed the performance of the speech tools on their laptop, which was stuttering and that's because of the laptop. The meeting ended with a discussion about how to make speech tools work with the speech tool. The group also discussed how to use the game-time and play-time functions.

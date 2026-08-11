@@ -1,0 +1,30 @@
+================================================================
+MEETING NOTES: EN2001b.txt
+================================================================
+
+OVERALL SUMMARY
+  The meeting was mainly about merging data into XML files and making sense together of the XML format. The team discussed how they could fit in more than just one word for each word and how long each expression would be. Then, the team decided to create a file with a start, word and end word, and another with annotations for information density. They wanted to be able to attach to each of the segments with one number for now. The meeting ended with a discussion about the prototype of the project, which would be shown to team members on Monday.
+
+▸ Section 1  (sentences 0-77)
+  The meeting was mainly about merging data into XML files and making sense together of the XML format. The team discussed how they could fit in more than just one word for each word and how long each expression would be. Then, the team members discussed how to use different annotations for different expressions and how they should be combined.
+
+▸ Section 2  (sentences 78-146)
+  The meeting started with a brief introduction of different files. The team was trying to understand what each file was pulling from. The meeting was mainly about the segments file, which are segments in what sense. The segment is what is displayed in one line by that, and that's usually dialogue act. Segment can have both one of those word strings that are presented in one lines can have several dialogue acts annotated on it. Then, they would need a value label for each of those segments that are not dialogue acts. That's why. Then the team decided to create a file
+
+▸ Section 3  (sentences 147-237)
+  The meeting was mainly about how to tie together various layers of XML files. The team wanted to have two XML files, one with a start, word and end word, and another with annotations for information density. Then, the team discussed how they wanted to use different layers of the model. They wanted to be able to attach to each of the segments with one number for now. The meeting ended with a brief discussion about the future of the project.
+
+▸ Section 4  (sentences 238-330)
+  The meeting was mainly about the data structure of the data structures. First, the team discussed how to use KnightXmell's data structure and how to tie it in. Then, the group discussed how they could use different data structures, such as the information density algorithm and star times. The meeting ended with a discussion about how the team could put together the whole body and how often it occurs over the whole of the body that from that it calculates.
+
+▸ Section 5  (sentences 331-426)
+  The whole meeting was about the human topic. It was mainly about how to find out which words to be found in each meeting. Then, the team discussed how to use the same matrix as I'm using in my latent semantic analysis. Then the team talked about how they could find out what words to find in which meeting participants would be found. The meeting ended with a discussion about the future direction of the meeting.
+
+▸ Section 6  (sentences 427-490)
+  The meeting was mainly about segmentation, segment similarity, and latent semantic analysis. The team was working on finding similar segments based on latent semantic analyses. Then, they discussed how to tie their rainbow stuff into some way that could attach it to a certain time segment. The meeting ended with a brief discussion about how the model could be used in the future.
+
+▸ Section 7  (sentences 491-635)
+  The meeting was mainly about the prototype of the project. The prototype was probably for a prototype for next week. First, the team discussed how to map the data on individual words and how to do it on a per-segment basis. Then, they discussed how they could make some sort of control, like, playing with different weightings for utterance based one versus the word based one and sort of look. The meeting ended with a discussion about how to use the data to test the effectiveness of the system.
+
+▸ Section 8  (sentences 636-684)
+  The meeting was mainly about the prototype of the prototype, which would be shown to the team members on Monday. The prototype would be based on the existing data, but to develop the data would be a lot easier to use. It's a bootstrapping problem like for the prototype and it would be easy to use the data in a form which is easy to read in at the moment. Then, the team got to know each other's data, which they could use in some way or another to tie in and visualize the prototype. The meeting ended with a discussion about the

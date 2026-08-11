@@ -1,0 +1,30 @@
+================================================================
+MEETING NOTES: EN2001a.txt
+================================================================
+
+OVERALL SUMMARY
+  The meeting was mainly about the presentation of the current model of the model. Then, the team discussed how to deal with data that was loaded from the file and how to use it in the browser. The meeting ended with a discussion about the future direction of the project and future directions. The team decided to leave the 9x model framework for the search function, which is leaving it with the Knight XML framework for synchronizing through all the different levels, whenever there's a change, whenever something's moving forward and stuff. They also discussed how they could store the importance of certain words on
+
+▸ Section 1  (sentences 0-125)
+  The meeting was mainly about the prototype of the remote control. The team decided to leave the 9x model framework for the search function, which is leaving it with the Knight XML framework for synchronizing through all the different levels, whenever there's a change, whenever something's moving forward and stuff. Then, the team discussed how to deal with data that was loaded from the file and how to use it in the browser. The meeting ended with a discussion about the future direction of the project and future directions.
+
+▸ Section 2  (sentences 126-334)
+  The meeting was mainly about the presentation of the current model of the model. Then, the team talked about the display model and how to make it easier to use in the future. The team discussed how to use the importance measure and display displays in the text body. They also talked about how they could store the importance of certain words on an utterance level. The meeting ended with a discussion about how the model could be used for skimming and displaying a summarized version of the whole model.
+
+▸ Section 3  (sentences 335-543)
+  The meeting was mainly about how to extract timestamps for utterances where they start and where they finish. The team decided to make their own excellent document in memory that everyone's module changes that rather than the underlying data. Then, the team discussed how to make the document more or less like the way how we store individual utterances. They also discussed how they would be able to add an integer to every utterance as an integer. The meeting ended with a discussion about how the team could make annotations for some annotations.
+
+▸ Section 4  (sentences 544-623)
+  The meeting was mainly focused on the Knight X and L project, which is more or less working on on chunk data, but at least we have the framework in which we can then test everything and look at everything. Then, the team discussed the integration, loading and integration and handling the data loading and handling of the data. Then the team talked about how the data structure can be stored in a useful representation in the browser. The meeting ended with a discussion about how to use XML to display meeting data.
+
+▸ Section 5  (sentences 624-828)
+  The meeting was mainly about the use of the actual XML parser in Python. The team discussed various tasks, including the number task, and the display of the display to a vast degree without actually having this flying framework working. Then, the team discussed how to use the browser framework as a running program. The meeting ended with a lot of questions about the team members' knowledge.
+
+▸ Section 6  (sentences 829-955)
+  The meeting was mainly about how to get stuff home from the meeting. First, the team got the raw text out of it, but it has to be on it, still. Then, they discussed how to use the frequency of words in the regions of text to find out what was interesting. Next, they talked about how they could make use of it for the agreement and disagreement thing. The team also discussed how they might use it to help their latent semantic analysis. Finally, the meeting ended with a brief discussion about how the team could use it in the future.
+
+▸ Section 7  (sentences 956-1103)
+  The meeting was mainly about the implementation of the XE process. The team discussed how they could get a mini browse of the project. They also discussed how to get a copy of the process and extract the words from the words file. Finally, they discussed how the team could use websites to listen to. The meeting ended with a discussion about the current progress on the project and the future of it.
+
+▸ Section 8  (sentences 1104-1301)
+  The meeting was mainly about the presentation of the data collected by the team. The team was trying to build a dictionary based on the data gathered from various series. They decided to use the frequency as the frequency of certain words as the basis for their presentation. They also discussed how to make the frequency counts and how to write the data into a single file. The meeting ended with a discussion on the TF IDS and the audio thing.
