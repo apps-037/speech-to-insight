@@ -1,0 +1,62 @@
+{
+  "segmentation": {
+    "note": "QMSum test split. Pk / WindowDiff, lower is better.",
+    "never_split": {
+      "pk": 0.355,
+      "windowdiff": 0.357
+    },
+    "embedding_similarity": {
+      "pk": 0.381,
+      "windowdiff": 0.408
+    },
+    "bilstm": {
+      "pk": 0.344,
+      "windowdiff": 0.35,
+      "threshold": 0.3
+    }
+  },
+  "rouge": {
+    "note": "QMSum test split. ROUGE F1, higher is better.",
+    "pretrained": {
+      "rouge1": 0.2322,
+      "rouge2": 0.0475,
+      "rougeL": 0.1454
+    },
+    "finetuned": {
+      "rouge1": 0.3809,
+      "rouge2": 0.1126,
+      "rougeL": 0.2246
+    }
+  },
+  "asr": {
+    "per_meeting": [
+      {
+        "meeting": "EN2001a",
+        "wer": 0.262,
+        "drift": 0.041
+      },
+      {
+        "meeting": "EN2001b",
+        "wer": 0.233,
+        "drift": 0.018
+      },
+      {
+        "meeting": "EN2001d",
+        "wer": 0.263,
+        "drift": 0.024
+      },
+      {
+        "meeting": "EN2001e",
+        "wer": 0.254,
+        "drift": 0.033
+      },
+      {
+        "meeting": "EN2003a",
+        "wer": 0.186,
+        "drift": 0.031
+      }
+    ],
+    "mean_wer": 0.24,
+    "mean_drift": 0.029
+  }
+}

@@ -6,10 +6,12 @@ validation) and reports Pk / WindowDiff on test - the numbers for the report -
 alongside the never-split baseline for context.
 
     python src/segmentation/evaluate.py
+    python src/segmentation/evaluate.py --save reports/metrics.json   # record for plots
 
 Needs the test cache (src/segmentation/embed.py --split test).
 """
 import argparse
+import json
 import os
 
 import torch
@@ -29,11 +31,31 @@ def load_cache(split):
     return torch.load(path)
 
 
+def save_metrics(path, ns, bilstm, thr):
+    """Read-modify-write the shared metrics JSON so the plots use real numbers.
+    Only updates the segmentation model + never-split rows; leaves everything
+    else (embedding-similarity baseline, ROUGE) untouched."""
+    data = {}
+    if os.path.exists(path):
+        with open(path) as f:
+            data = json.load(f)
+    seg = data.setdefault("segmentation", {})
+    seg["never_split"] = {"pk": round(ns[0], 3), "windowdiff": round(ns[1], 3)}
+    seg["bilstm"] = {"pk": round(bilstm[0], 3), "windowdiff": round(bilstm[1], 3),
+                     "threshold": thr}
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+    print(f"  saved -> {path}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", default="test")
     ap.add_argument("--ckpt", default=CKPT, help="checkpoint to evaluate")
     ap.add_argument("--device", default="cpu")
+    ap.add_argument("--save", default=None,
+                    help="write/update a metrics JSON (e.g. reports/metrics.json)")
     args = ap.parse_args()
 
     if not os.path.exists(args.ckpt):
@@ -64,6 +86,9 @@ def main():
     print(f"\n{args.split} split ({len(data)} meetings), decode threshold={thr}")
     print(f"  never-split baseline   Pk={ns_pk:.3f}  WindowDiff={ns_wd:.3f}")
     print(f"  BiLSTM segmenter       Pk={m_pk:.3f}  WindowDiff={m_wd:.3f}")
+
+    if args.save:
+        save_metrics(args.save, (ns_pk, ns_wd), (m_pk, m_wd), thr)
 
 
 if __name__ == "__main__":

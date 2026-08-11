@@ -93,6 +93,66 @@ def summary_drift(sections_clean, sections_whisper, model_name, device):
     return clean_sum, whisper_sum, scores
 
 
+def analyze_pair(clean_text, whisper_text, seg_model, embedder, device,
+                 num_sections, words_per_unit):
+    """WER + segmentation drift for one clean/Whisper pair."""
+    wer = try_wer(clean_text, whisper_text)
+    cunits = split_words(clean_text, words_per_unit)
+    wunits = split_words(whisper_text, words_per_unit)
+    _, csent, cb = segment_text(clean_text, seg_model, embedder, device,
+                                num_sections=num_sections, units=cunits)
+    _, wsent, wb = segment_text(whisper_text, seg_model, embedder, device,
+                                num_sections=num_sections, units=wunits)
+    drift = segmentation_drift(cb, len(csent), wb, len(wsent))
+    return wer, drift
+
+
+def save_asr(rows, mean_wer, mean_drift, path="reports/metrics.json"):
+    """Write per-meeting + average ASR numbers into metrics.json (for plots.py)."""
+    import json
+    data = {}
+    if os.path.exists(path):
+        with open(path) as f:
+            data = json.load(f)
+    data["asr"] = {
+        "per_meeting": [{"meeting": m, "wer": round(w, 3), "drift": round(d, 3)}
+                        for m, w, d in rows],
+        "mean_wer": round(mean_wer, 3),
+        "mean_drift": round(mean_drift, 3),
+    }
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+    print(f"\nsaved -> {path}")
+
+
+def run_batch(meetings, args, device):
+    """Run the analysis over several meetings and report a table + averages."""
+    seg_model = load_segmenter(args.seg_ckpt, device)
+    embedder = Embedder(device)
+    rows = []
+    for mid in meetings:
+        clean_text = read(f"data/reference/{mid}.txt")
+        whisper_text = read(f"data/transcripts/{mid}.txt")
+        wer, drift = analyze_pair(clean_text, whisper_text, seg_model, embedder,
+                                  device, args.num_sections, args.words_per_unit)
+        rows.append((mid, wer, drift))
+        print(f"  {mid}:  WER={wer:.3f}  drift={drift:.3f}")
+
+    mean_wer = sum(r[1] for r in rows) / len(rows)
+    mean_drift = sum(r[2] for r in rows) / len(rows)
+
+    print("\n=== ASR-error propagation across meetings ===")
+    print(f"{'meeting':<10}{'WER':>10}{'drift':>10}")
+    for mid, wer, drift in rows:
+        print(f"{mid:<10}{wer:>10.3f}{drift:>10.3f}")
+    print("-" * 30)
+    print(f"{'AVERAGE':<10}{mean_wer:>10.3f}{mean_drift:>10.3f}")
+    print(f"\n-> across {len(rows)} meetings: Whisper changed ~{mean_wer * 100:.0f}% "
+          f"of words, but topic boundaries moved only ~{mean_drift * 100:.0f}%")
+    save_asr(rows, mean_wer, mean_drift)
+
+
 def main():
     ap = argparse.ArgumentParser(description="ASR-error propagation analysis.")
     ap.add_argument("--clean", default=CLEAN)
@@ -105,9 +165,17 @@ def main():
     ap.add_argument("--summaries", action="store_true",
                     help="also run the (heavy) summarization comparison")
     ap.add_argument("--model", default=None, help="summarizer model/checkpoint")
+    ap.add_argument("--meetings", nargs="+", default=None,
+                    help="meeting IDs to batch over (expects data/reference/<id>.txt "
+                         "and data/transcripts/<id>.txt)")
     args = ap.parse_args()
 
     device = pick_device(args.device)
+
+    if args.meetings:
+        run_batch(args.meetings, args, device)
+        return
+
     clean_text, whisper_text = read(args.clean), read(args.whisper)
 
     print("=== ASR-error propagation: clean vs Whisper ===")
@@ -137,6 +205,12 @@ def main():
     print(f"       whisper: {len(wsent)} windows, boundaries {wb}")
     print(f"       boundary drift = {drift:.3f}  "
           f"(0 = identical splits; ~{drift * 100:.1f}% of the meeting length)")
+
+    print("\n--- what this means ------------------------------")
+    if wer is not None:
+        print(f"  Whisper changed ~{wer * 100:.0f}% of the words   (WER {wer:.3f})")
+    print(f"  but the topic boundaries moved only ~{drift * 100:.0f}%")
+    print("  -> segmentation is fairly robust to ASR errors")
 
     # 3. summary drift (optional, heavy)
     if args.summaries:

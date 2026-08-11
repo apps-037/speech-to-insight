@@ -34,8 +34,9 @@ model on a test set with no training at all.
 - **QMSum** - primary, for training and evaluation. Text only (no audio). Gives
   labels for both tasks: topic boundaries and summary pairs.
   https://github.com/Yale-LILY/QMSum
-- **AMI** - audio, for running Whisper and the ASR-error analysis. Has both audio
-  and clean reference transcripts. We use only 3–5 meetings, not the full 29 GB.
+- **AMI** - audio, for running Whisper and the ASR-error analysis. It has both the
+  audio and a clean human transcript for each meeting. We used 5 meetings (EN2001a,
+  EN2001b, EN2001d, EN2001e, EN2003a), not the whole 29 GB.
   https://huggingface.co/datasets/edinburghcstr/ami
 
 ## Repository layout
@@ -57,7 +58,7 @@ src/summarization/            # summarization (fine-tuned distilBART)
   summarize.py                #   inference entry: transcript → summary
 
 src/pipeline.py               # end-to-end: transcript → segments → per-section + overall summary
-src/error_analysis.py         # ASR-error propagation: clean vs Whisper (WER, segmentation & summary drift)
+src/error_analysis.py         # ASR error analysis: clean vs Whisper (WER + how far topic splits move); --meetings for a batch
 
 tests/test_summarize.py       # unit tests for the summarization chunker
 data/audio/                   # AMI .wav files (gitignored)
@@ -76,8 +77,8 @@ models/                       # trained checkpoints (gitignored - too large)
 - `src/fetch_ami.py`: streams one AMI meeting and stitches it into a single `.wav`,
   avoiding the full 29 GB download. Quick-test and `--full` modes.
 - `src/transcribe.py`: runs Whisper on an audio file, saves the transcript.
-- Transcribed a real AMI meeting (EN2001a) end to end; clean reference transcript
-  stored alongside it for the error analysis.
+- Ran Whisper on 5 AMI meetings end to end (EN2001a, b, d, e and EN2003a), and kept
+  each meeting's clean human transcript next to it for the error analysis.
 
 **Done (topic segmentation - trained):**
 
@@ -129,29 +130,45 @@ models/                       # trained checkpoints (gitignored - too large)
 
 **Done (end-to-end pipeline + ASR-error analysis):**
 
-- `src/pipeline.py`: wires the two halves - transcript → topic sections → per-section
-  summaries + one overall summary (summarizer used as-is: fine-tuned checkpoint if
-  present, else pretrained). Verified end to end on the EN2001a Whisper transcript.
-- `src/error_analysis.py`: ASR-error propagation, clean reference vs Whisper. Splits
-  both by fixed word-windows (the reference is unpunctuated, Whisper isn't) for a fair
-  comparison. First result on EN2001a: **WER 26.2%** input error, yet segmentation
-  boundaries drift only **~4%** of the meeting length - segmentation is fairly robust
-  to ASR errors. Summary-drift (ROUGE, clean vs Whisper) runs with `--summaries` once
-  the fine-tuned checkpoint is in place.
+- `src/pipeline.py`: ties the two halves together. It takes a transcript, splits it into
+  topic sections with our segmenter, summarizes each section with the fine-tuned model,
+  and adds one overall summary. If the fine-tuned checkpoint is there it uses it, otherwise
+  it falls back to the pretrained one. We use it to turn the AMI Whisper transcripts into
+  topic-wise notes (saved to `data/summaries/`).
+- `src/error_analysis.py`: our main analysis. We run the same segmenter on two versions of
+  each meeting, the clean human transcript and the Whisper one, and check how much the
+  output changes. The clean AMI transcript has no punctuation and Whisper adds it, so
+  comparing sentence by sentence isn't fair, so we cut both into fixed 25-word windows
+  instead. Pass `--meetings` to run it over several meetings and average them.
+
+  Across 5 meetings, Whisper got about 24% of the words wrong on average, but the topic
+  boundaries only moved about 3%. So the segmentation holds up pretty well even when the
+  transcript is noisy.
+
+  | Meeting | WER   | boundary drift |
+  | ------- | ----- | -------------- |
+  | EN2001a | 0.262 | 0.041          |
+  | EN2001b | 0.233 | 0.018          |
+  | EN2001d | 0.263 | 0.024          |
+  | EN2001e | 0.254 | 0.033          |
+  | EN2003a | 0.186 | 0.031          |
+  | avg     | 0.240 | 0.029          |
+
+  The summary side of this (ROUGE between the clean and Whisper summaries) runs with
+  `--summaries`.
 
 **Next:**
 
-- Run the full pipeline on the fine-tuned checkpoint and complete the summary-drift
-  half of the ASR-error analysis (`error_analysis.py --summaries`).
-- Optional: enlarge training data with QMSum specific-query pairs; move the fine-tune
-  to Colab if we scale up.
+- Run the summary side of the error analysis (`error_analysis.py --summaries`) to see how
+  the ASR errors change the summaries, not just the segmentation.
+- Clean up the figures and finish the write-up.
 
 ## Setup
 
 Use Python 3.11 or 3.12 (not 3.14 - it breaks the ML libraries).
 
 ```bash
-python3.11 -m venv venv        # or: python3.12 -m venv venv312
+python3.11 -m venv venv 
 source venv/bin/activate
 pip install --upgrade pip
 pip install faster-whisper "datasets<3.0" soundfile numpy
@@ -177,11 +194,11 @@ python src/segmentation/embed.py --split train      # also: val / test
 python src/segmentation/train.py
 python src/segmentation/evaluate.py
 
-# end-to-end meeting notes (transcript → sections → summaries)
-python src/pipeline.py data/transcripts/EN2001a.txt --num-sections 8
+# end-to-end meeting notes for one meeting (saved to data/summaries/)
+python src/pipeline.py data/transcripts/EN2001a.txt --num-sections 8 --out data/summaries/EN2001a.txt
 
-# ASR-error propagation (clean vs Whisper); add --summaries with the fine-tuned model
-python src/error_analysis.py --num-sections 8
+# ASR-error propagation across several meetings
+python src/error_analysis.py --meetings EN2001a EN2001b EN2001d EN2001e EN2003a --num-sections 8
 ```
 
 ## Notes
