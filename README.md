@@ -114,7 +114,9 @@ models/                       # trained checkpoints (gitignored - too large)
   speaker names and puts a short query in front. Splits are 162 / 35 / 37
   (train / val / test). QMSum is cloned to `data/qmsum/` (gitignored).
 - `src/summarization/train.py`: fine-tunes `distilbart-cnn-12-6` on those pairs
-  (3 epochs, about 12 min on the Mac GPU). Saved to `models/distilbart-qmsum`.
+  (3 epochs, about 12 min on the Mac GPU). Saved to `models/distilbart-qmsum`, and also
+  uploaded to the HF Hub (`appsaini602/distilbart-qmsum`) since the 1.1 GB checkpoint is too
+  big to commit. The code downloads it from there when the local copy is absent.
 - `src/summarization/evaluate.py`: ROUGE on the QMSum test split, before vs after
   fine-tuning:
 
@@ -179,14 +181,18 @@ pip install nltk jiwer
 
 ### Quick demo
 
-Run the whole pipeline on a sample meeting with one command:
+`demo.py` runs the whole pipeline (audio -> topic notes). Two ways to run it:
 
 ```bash
-python demo.py
+python demo.py                          # pre-defined input: a bundled sample meeting
+python demo.py path/to/audio.wav        # your own audio (transcribed with Whisper first)
+python demo.py path/to/transcript.txt   # your own transcript (skips Whisper)
 ```
 
-It splits a meeting into topic sections and summarizes each one (using the fine-tuned
-summarizer if it's there, otherwise the pretrained one). The individual stages are below.
+With no arguments it transcribes the bundled meeting audio with Whisper, splits it into
+topic sections, and summarizes each one. The summarizer uses the local fine-tuned
+checkpoint if present, otherwise it downloads our fine-tuned copy from the HF Hub
+(`appsaini602/distilbart-qmsum`). The individual stages are below.
 
 Run the speech-to-text pipeline:
 
