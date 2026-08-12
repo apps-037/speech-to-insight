@@ -115,8 +115,9 @@ models/                       # trained checkpoints (gitignored - too large)
   (train / val / test). QMSum is cloned to `data/qmsum/` (gitignored).
 - `src/summarization/train.py`: fine-tunes `distilbart-cnn-12-6` on those pairs
   (3 epochs, about 12 min on the Mac GPU). Saved to `models/distilbart-qmsum`, and also
-  uploaded to the HF Hub (`appsaini602/distilbart-qmsum`) since the 1.1 GB checkpoint is too
-  big to commit. The code downloads it from there when the local copy is absent.
+  uploaded to the HF Hub since the 1.1 GB checkpoint is too big to commit
+  (https://huggingface.co/appsaini602/distilbart-qmsum). The code downloads it from there
+  when the local copy is absent.
 - `src/summarization/evaluate.py`: ROUGE on the QMSum test split, before vs after
   fine-tuning:
 
@@ -191,8 +192,8 @@ python demo.py path/to/transcript.txt   # your own transcript (skips Whisper)
 
 With no arguments it transcribes the bundled meeting audio with Whisper, splits it into
 topic sections, and summarizes each one. The summarizer uses the local fine-tuned
-checkpoint if present, otherwise it downloads our fine-tuned copy from the HF Hub
-(`appsaini602/distilbart-qmsum`). The individual stages are below.
+checkpoint if present, otherwise it downloads our fine-tuned copy from the HF Hub:
+https://huggingface.co/appsaini602/distilbart-qmsum . The individual stages are below.
 
 Run the speech-to-text pipeline:
 
