@@ -66,7 +66,7 @@ def run(transcript, num_sections=None, target_len=40, seg_ckpt=SEG_CKPT,
                                            device, max_summary=max_summary,
                                            min_summary=min_summary, query=query)
 
-    lines = ["=" * 64, f"MEETING NOTES: {os.path.basename(transcript)}", "=" * 64,
+    lines = [f"MEETING NOTES: {os.path.basename(transcript)}", "-" * 64,
              "", "OVERALL SUMMARY", "  " + overall]
     for i, start in enumerate(bounds):
         end = bounds[i + 1] - 1 if i + 1 < len(bounds) else len(sents) - 1
