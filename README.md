@@ -42,6 +42,8 @@ model on a test set with no training at all.
 ## Repository layout
 
 ```
+demo.py                       # one-command demo: runs the whole pipeline on a sample meeting
+
 src/fetch_ami.py              # AMI: stream one meeting from HF, stitch clips into a .wav
 src/transcribe.py             # Whisper (faster-whisper, base) audio → transcript .txt
 
@@ -59,6 +61,7 @@ src/summarization/            # summarization (fine-tuned distilBART)
 
 src/pipeline.py               # end-to-end: transcript → segments → per-section + overall summary
 src/error_analysis.py         # ASR error analysis: clean vs Whisper (WER + how far topic splits move); --meetings for a batch
+src/plots.py                  # makes the results figures from reports/metrics.json
 
 tests/test_summarize.py       # unit tests for the summarization chunker
 data/audio/                   # AMI .wav files (gitignored)
@@ -177,6 +180,17 @@ pip install torch transformers datasets accelerate rouge-score sentencepiece
 # segmentation + error analysis:
 pip install nltk jiwer
 ```
+
+### Quick demo
+
+Run the whole pipeline on a sample meeting with one command:
+
+```bash
+python demo.py
+```
+
+It splits a meeting into topic sections and summarizes each one (using the fine-tuned
+summarizer if it's there, otherwise the pretrained one). The individual stages are below.
 
 Run the speech-to-text pipeline:
 
