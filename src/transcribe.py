@@ -5,7 +5,7 @@ import os
 # Use "base" or "small" for quick testing; "medium" is more accurate but slower
 MODEL_SIZE = "base"
 
-def transcribe(audio_path):
+def transcribe(audio_path, verbose=True, progress_min=3):
     # compute_type="int8" keeps it fast and light on CPU
     model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
 
@@ -14,9 +14,15 @@ def transcribe(audio_path):
     print(f"Detected language: {info.language} (probability {info.language_probability:.2f})")
 
     full_text = []
+    step = max(1, progress_min) * 60   # in quiet mode, a progress line every few minutes
+    next_mark = step
     for segment in segments:
-        line = f"[{segment.start:.2f}s -> {segment.end:.2f}s] {segment.text}"
-        print(line)
+        if verbose:   # per-segment lines when run as a standalone script
+            print(f"[{segment.start:.2f}s -> {segment.end:.2f}s] {segment.text}")
+        else:
+            while segment.end >= next_mark:
+                print(f"  transcribed ~{next_mark // 60} min of audio...", flush=True)
+                next_mark += step
         full_text.append(segment.text)
 
     # Save transcript
