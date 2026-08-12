@@ -56,8 +56,8 @@ def seg_figure(d):
     x = np.arange(len(methods))
     w = 0.38
     fig, ax = plt.subplots(figsize=(6.4, 3.7))
-    _labelled_bars(ax, x - w / 2, pk, w, TEAL, "Pk", "{:.3f}")
-    _labelled_bars(ax, x + w / 2, wd, w, GRAY, "WindowDiff", "{:.3f}")
+    _labelled_bars(ax, x - w / 2, pk, w, TEAL, "Pk", "{:.2f}")
+    _labelled_bars(ax, x + w / 2, wd, w, GRAY, "WindowDiff", "{:.2f}")
     ax.set_xticks(x)
     ax.set_xticklabels(methods)
     _finish(ax, "Topic segmentation on QMSum test", "score  (lower is better)",
