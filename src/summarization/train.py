@@ -1,16 +1,8 @@
-"""
-Fine-tune a seq2seq summarizer on QMSum.
+"""Fine-tune a seq2seq summarizer on QMSum.
 
-Trains with a real forward/loss/backprop loop (HuggingFace Seq2SeqTrainer) on the
-QMSum general-summary pairs from data.py, then saves the fine-tuned model.
-Evaluate before/after with src/summarization/evaluate.py.
-
-    # quick loop check (tiny, fast):
-    python src/summarization/train.py --model t5-small --limit 8 --epochs 1 \
-        --max-input 512 --output-dir models/debug
-
-    # real run:
-    python src/summarization/train.py         # distilBART, 3 epochs -> models/distilbart-qmsum
+Usage:
+    python src/summarization/train.py --model t5-small --limit 8 --epochs 1   # quick check
+    python src/summarization/train.py                                         # full run
 """
 import argparse
 import os
@@ -32,6 +24,7 @@ DEFAULT_MODEL = "sshleifer/distilbart-cnn-12-6"
 
 
 def build_dataset(split, tokenizer, max_input, max_target, limit=None):
+    """Tokenize a QMSum split into a Dataset of model inputs and labels."""
     pairs = load_qmsum_pairs(split)
     if limit:
         pairs = pairs[:limit]
@@ -47,6 +40,7 @@ def build_dataset(split, tokenizer, max_input, max_target, limit=None):
 
 
 def main():
+    """Fine-tune the model on the QMSum train split and save it to --output-dir."""
     ap = argparse.ArgumentParser(description="Fine-tune a summarizer on QMSum.")
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--output-dir", default="models/distilbart-qmsum")

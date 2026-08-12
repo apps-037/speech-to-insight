@@ -1,20 +1,9 @@
-"""
-Prepare QMSum into (input, target) summarization pairs.
+"""Build (input, target) summarization pairs from QMSum.
 
-- input  = "<query> <meeting transcript>", with speaker labels stripped so the
-           text matches the unlabeled blob our Whisper transcripts produce.
-- target = the human summary (from QMSum's `general_query_list` answers).
+input  = "<query> <meeting transcript>" with speaker labels stripped.
+target = the human whole-meeting summary (QMSum general_query_list answer).
 
-We prepend the query (e.g. "Summarize the whole meeting.") so that multiple
-general queries for the same meeting become distinct, non-contradictory training
-pairs. At inference we prepend the same fixed query.
-
-QMSum meetings are far longer than the model's input window; truncation to the
-model max is handled at train/inference time (standard QMSum + BART practice).
-
-Usage:
-    python src/summarization/data.py            # print split stats
-    python src/summarization/data.py --dump     # also write data/qmsum_processed/*.jsonl
+Usage: python src/summarization/data.py [--dump]
 """
 import argparse
 import json
@@ -23,11 +12,10 @@ import statistics
 
 QMSUM_DIR = "data/qmsum/data/ALL/jsonl"
 SPLIT_FILES = {"train": "train.jsonl", "val": "val.jsonl", "test": "test.jsonl"}
-GENERIC_QUERY = "Summarize the whole meeting."
 
 
 def strip_speakers(meeting_transcripts):
-    """Join turn contents into one blob, dropping speaker labels."""
+    """Join turn contents into one string, dropping speaker labels."""
     return " ".join(turn["content"].strip() for turn in meeting_transcripts)
 
 
@@ -50,6 +38,7 @@ def load_qmsum_pairs(split, data_dir=QMSUM_DIR, prepend_query=True):
 
 
 def main():
+    """Print per-split pair counts and length stats; with --dump, write jsonl."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--data-dir", default=QMSUM_DIR)
     ap.add_argument("--dump", action="store_true",

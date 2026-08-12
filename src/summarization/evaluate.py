@@ -1,13 +1,9 @@
-"""
-Evaluate a summarization model on the QMSum test split with ROUGE.
+"""Evaluate a summarization model on the QMSum test split with ROUGE.
 
-Runs the model on QMSum inputs (truncated to the model's max input, standard
-QMSum + BART practice) and reports ROUGE-1/2/L F-measure against the reference
-summaries. Use it to compare the pretrained baseline vs. the fine-tuned model.
+Reports ROUGE-1/2/L F-measure, so the pretrained and fine-tuned models can be
+compared.
 
-    python src/summarization/evaluate.py                    # pretrained baseline
-    python src/summarization/evaluate.py --model models/ft  # fine-tuned checkpoint
-    python src/summarization/evaluate.py --limit 20         # quick subset
+Usage: python src/summarization/evaluate.py [--model NAME] [--limit N]
 """
 import argparse
 
@@ -24,6 +20,7 @@ DEFAULT_MODEL = "sshleifer/distilbart-cnn-12-6"
 
 
 def pick_device(device):
+    """Return the device to use: the given one, else cuda, then mps, then cpu."""
     if device:
         return device
     if torch.cuda.is_available():
@@ -35,6 +32,7 @@ def pick_device(device):
 
 def evaluate(model_name, split="test", limit=None, device=None,
              max_summary=160, min_summary=30):
+    """Summarize each test input and return the mean ROUGE-1/2/L F-measure."""
     device = pick_device(device)
     print(f"Loading '{model_name}' on {device}...")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -72,6 +70,7 @@ def evaluate(model_name, split="test", limit=None, device=None,
 
 
 def main():
+    """Parse args and run the evaluation."""
     ap = argparse.ArgumentParser(description="ROUGE evaluation on QMSum.")
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--split", default="test")

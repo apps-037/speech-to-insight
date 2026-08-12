@@ -1,22 +1,9 @@
-"""
-Summarize a meeting transcript.
+"""Summarize a meeting transcript into a short abstractive summary.
 
-Reads a plain-text transcript (as produced by src/transcribe.py: one text blob,
-no speaker labels or timestamps) and writes an abstractive summary to
-data/summaries/<name>.txt.
+Long transcripts are split into token-sized chunks, each chunk is summarized,
+and the chunk summaries are summarized again until one remains.
 
-Meeting transcripts are far longer than the model's input limit, so we use a
-map-reduce strategy: split the transcript into token-bounded chunks, summarize
-each chunk, then recursively summarize the joined chunk-summaries until a single
-overall summary remains.
-
-The chunker (`chunk_by_tokens`) is a pure function so it can be unit-tested and
-so a topic-segmentation boundary function can replace it later without changing
-the rest of the code.
-
-Usage:
-    python src/summarization/summarize.py data/transcripts/EN2001a.txt
-    python src/summarization/summarize.py data/transcripts/EN2001a.txt --model <hf-name-or-path>
+Usage: python src/summarization/summarize.py <transcript.txt> [--model NAME]
 """
 import argparse
 import os
@@ -25,7 +12,7 @@ import sys
 import torch
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-# Prefer the locally fine-tuned checkpoint if present; else the pretrained model.
+# use the fine-tuned checkpoint if present, else the pretrained model
 FINETUNED_DIR = "models/distilbart-qmsum"
 PRETRAINED_MODEL = "sshleifer/distilbart-cnn-12-6"
 DEFAULT_MODEL = FINETUNED_DIR if os.path.isdir(FINETUNED_DIR) else PRETRAINED_MODEL
@@ -33,11 +20,8 @@ DEFAULT_QUERY = "Summarize the whole meeting."
 
 
 def chunk_by_tokens(text, tokenizer, max_tokens=800, overlap=50):
-    """Split `text` into chunks of at most `max_tokens` tokens.
-
-    Returns a list of decoded string chunks with a small token overlap between
-    consecutive chunks. Pure function of (text, tokenizer) - unit-testable.
-    """
+    """Split text into overlapping chunks of at most max_tokens tokens.
+    Returns a list of decoded string chunks."""
     ids = tokenizer.encode(text, add_special_tokens=False)
     if not ids:
         return []
@@ -56,11 +40,8 @@ def chunk_by_tokens(text, tokenizer, max_tokens=800, overlap=50):
 
 def summarize_chunk(text, model, tokenizer, device, max_input=1024,
                     max_summary=160, min_summary=30, query=None):
-    """Summarize a single chunk that already fits (roughly) in the model.
-
-    If `query` is given it is prepended — the fine-tuned model was trained on
-    query-prefixed inputs, so this keeps train and inference consistent.
-    """
+    """Summarize one chunk of text. If query is set, prepend it so the input
+    matches how the model was trained. Returns the summary string."""
     if query:
         text = f"{query} {text}"
     inputs = tokenizer(text, return_tensors="pt", truncation=True,
@@ -79,12 +60,8 @@ def summarize_chunk(text, model, tokenizer, device, max_input=1024,
 
 def summarize_document(text, model, tokenizer, device, chunk_tokens=800,
                        max_input=1024, max_summary=160, min_summary=30, query=None):
-    """Map-reduce summarization for arbitrarily long text.
-
-    Summarize each chunk (map), then recurse on the joined summaries (reduce)
-    until everything fits in one chunk. Always converges because each pass is
-    much shorter than its input.
-    """
+    """Summarize text of any length by summarizing each chunk, then combining
+    the chunk summaries recursively until one remains. Returns the summary."""
     chunks = chunk_by_tokens(text, tokenizer, max_tokens=chunk_tokens)
     if len(chunks) <= 1:
         return summarize_chunk(chunks[0] if chunks else text, model, tokenizer,
@@ -99,6 +76,7 @@ def summarize_document(text, model, tokenizer, device, chunk_tokens=800,
 
 
 def load_model(model_name, device):
+    """Load a seq2seq model and tokenizer and move them to device."""
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)
     model.eval()
@@ -106,6 +84,7 @@ def load_model(model_name, device):
 
 
 def main():
+    """Read the transcript, summarize it, and save the summary to data/summaries/."""
     ap = argparse.ArgumentParser(description="Summarize a meeting transcript.")
     ap.add_argument("transcript", help="path to a transcript .txt file")
     ap.add_argument("--model", default=DEFAULT_MODEL,

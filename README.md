@@ -63,7 +63,7 @@ src/pipeline.py               # end-to-end: transcript → segments → per-sect
 src/error_analysis.py         # ASR error analysis: clean vs Whisper (WER + how far topic splits move); --meetings for a batch
 src/plots.py                  # makes the results figures from reports/metrics.json
 
-tests/test_summarize.py       # unit tests for the summarization chunker
+tests/test_summarize.py       # unit tests for the summarization package (chunking + data prep)
 data/audio/                   # AMI .wav files (gitignored)
 data/transcripts/             # Whisper transcripts
 data/reference/               # clean human reference transcripts (for error analysis)
@@ -106,30 +106,26 @@ models/                       # trained checkpoints (gitignored - too large)
 
 **Done (summarization - fine-tuned):**
 
-- `src/summarization/summarize.py`: transcript `.txt` → summary `.txt`. Map-reduce over
-  token-bounded chunks (chunk → summarize → recursively reduce to one summary), so
-  arbitrarily long meetings fit the model. The chunker is a pure, unit-tested
-  function (`tests/test_summarize.py`) that a topic-segmentation boundary function
-  can replace later with no rewrite. Auto-uses the fine-tuned checkpoint when present
-  and prepends the same query used in training.
-- `src/summarization/data.py`: builds (input, target) pairs from QMSum general queries -
-  query-prefixed, speaker labels stripped to match the Whisper blob. 162 / 35 / 37
-  train / val / test pairs. QMSum cloned to `data/qmsum/` (gitignored).
-- `src/summarization/train.py`: real `Seq2SeqTrainer` fine-tuning loop. Fine-tuned
-  `distilbart-cnn-12-6` for 3 epochs (~12 min on the Mac's MPS GPU), saved to
-  `models/distilbart-qmsum`.
-- `src/summarization/evaluate.py`: ROUGE-1/2/L on the QMSum test split, pretrained vs
-  fine-tuned:
+- `src/summarization/summarize.py`: turns a transcript into a summary. A meeting is
+  longer than the model can read, so it summarizes the text in chunks and combines
+  those into one summary. It uses the fine-tuned checkpoint if it's there, and
+  prepends the same query it was trained with.
+- `src/summarization/data.py`: builds the training pairs from QMSum. It strips the
+  speaker names and puts a short query in front. Splits are 162 / 35 / 37
+  (train / val / test). QMSum is cloned to `data/qmsum/` (gitignored).
+- `src/summarization/train.py`: fine-tunes `distilbart-cnn-12-6` on those pairs
+  (3 epochs, about 12 min on the Mac GPU). Saved to `models/distilbart-qmsum`.
+- `src/summarization/evaluate.py`: ROUGE on the QMSum test split, before vs after
+  fine-tuning:
 
-  | Metric  | Baseline (pretrained) | Fine-tuned | Change |
-  | ------- | --------------------- | ---------- | ------ |
-  | ROUGE-1 | 0.2322                | 0.3809     | +64%   |
-  | ROUGE-2 | 0.0475                | 0.1126     | +137%  |
-  | ROUGE-L | 0.1454                | 0.2246     | +54%   |
+  | Metric  | Pretrained | Fine-tuned | Change |
+  | ------- | ---------- | ---------- | ------ |
+  | ROUGE-1 | 0.2322     | 0.3809     | +64%   |
+  | ROUGE-2 | 0.0475     | 0.1126     | +137%  |
+  | ROUGE-L | 0.1454     | 0.2246     | +54%   |
 
-  Confirmed qualitatively on the real EN2001a Whisper transcript: the fine-tuned
-  model gives a coherent, structured meeting summary where the pretrained baseline
-  gave disjointed news-style text.
+  On the EN2001a Whisper transcript the fine-tuned model reads like real meeting
+  notes, where the pretrained one gave choppy news-style text.
 
 **Done (end-to-end pipeline + ASR-error analysis):**
 
