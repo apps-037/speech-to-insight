@@ -12,10 +12,12 @@ import sys
 import torch
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-# use the fine-tuned checkpoint if present, else the pretrained model
+# Use the local fine-tuned checkpoint if it's here; otherwise download our fine-tuned
+# copy from the HF Hub. (PRETRAINED_MODEL stays available via --model as a fallback.)
 FINETUNED_DIR = "models/distilbart-qmsum"
+FINETUNED_HUB = "appsaini602/distilbart-qmsum"   # hosted copy of our fine-tuned model
 PRETRAINED_MODEL = "sshleifer/distilbart-cnn-12-6"
-DEFAULT_MODEL = FINETUNED_DIR if os.path.isdir(FINETUNED_DIR) else PRETRAINED_MODEL
+DEFAULT_MODEL = FINETUNED_DIR if os.path.isdir(FINETUNED_DIR) else FINETUNED_HUB
 DEFAULT_QUERY = "Summarize the whole meeting."
 
 
