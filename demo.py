@@ -52,8 +52,15 @@ def main():
 
     import pipeline
     print(f"\n[demo] Segmentation + summarization on: {transcript}\n")
-    pipeline.run(transcript, num_sections=6, query=pipeline.summarize.DEFAULT_QUERY)
-    print("\n[demo] Done.")
+    notes = pipeline.run(transcript, query=pipeline.summarize.DEFAULT_QUERY)   # sections auto-scale with meeting length
+
+    base = os.path.splitext(os.path.basename(transcript))[0]
+    out_path = f"data/summaries/{base}.txt"
+    os.makedirs("data/summaries", exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(notes + "\n")
+    print(f"\n[demo] Saved notes to {out_path}")
+    print("[demo] Done.")
 
 
 if __name__ == "__main__":
