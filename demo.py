@@ -51,8 +51,8 @@ def main():
     # audio -> transcribe with Whisper first; text -> use it as the transcript
     if inp.lower().endswith(AUDIO_EXT):
         import transcribe
-        print(f"[demo] Transcribing audio with Whisper (the slow step): {inp}\n")
-        transcribe.transcribe(inp)
+        print(f"[demo] Transcribing audio with Whisper (the slow step): {inp}")
+        transcribe.transcribe(inp, verbose=False)   # quiet: no per-segment flood
         base = os.path.splitext(os.path.basename(inp))[0]
         transcript = f"data/transcripts/{base}.txt"
     else:
