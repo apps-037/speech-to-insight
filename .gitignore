@@ -1,6 +1,9 @@
 venv/
 venv312/
-data/audio/
+data/audio/EN2001a.wav
+data/audio/EN2001b.wav
+data/audio/EN2001d.wav
+data/audio/EN2001e.wav
 data/qmsum/
 data/qmsum_processed/
 data/reference/

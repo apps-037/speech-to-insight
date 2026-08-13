@@ -27,8 +27,8 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(_HERE, "summarization"))
 sys.path.insert(0, os.path.join(_HERE, "segmentation"))   # last insert lands first on the path
 
-from segment_transcript import segment_text, load_model as load_segmenter, Embedder, pick_device  # noqa: E402
-import summarize  # noqa: E402
+from segment_transcript import segment_text, load_model as load_segmenter, Embedder, pick_device
+import summarize
 
 SEG_CKPT = "models/segmenter.pt"
 

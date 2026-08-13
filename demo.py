@@ -27,7 +27,7 @@ def choose_input():
         return sys.argv[1]                 # whatever the user passed
     if os.path.exists(SAMPLE_AUDIO):
         return SAMPLE_AUDIO                # default to the sample audio
-    return SAMPLE_TRANSCRIPT               # or its transcript if audio is missing
+    return SAMPLE_TRANSCRIPT              
 
 
 def main():
@@ -41,11 +41,10 @@ def main():
         print("[demo] Pass an audio file or a transcript:  python demo.py <path>")
         sys.exit(1)
 
-    # if it's audio, transcribe it first; if it's text, it's already a transcript
     if inp.lower().endswith(AUDIO_EXT):
         import transcribe
         print(f"[demo] Transcribing audio with Whisper (the slow step): {inp}")
-        transcribe.transcribe(inp, verbose=False)   # quiet so it doesn't spam segments
+        transcribe.transcribe(inp, verbose=False)  
         base = os.path.splitext(os.path.basename(inp))[0]
         transcript = f"data/transcripts/{base}.txt"
     else:
