@@ -1,3 +1,10 @@
+"""
+Transcribe an audio file with Whisper (faster-whisper) and save the transcript to
+data/transcripts/.
+
+Usage:
+    python src/transcribe.py data/audio/EN2001a.wav
+"""
 from faster_whisper import WhisperModel
 import sys
 import os

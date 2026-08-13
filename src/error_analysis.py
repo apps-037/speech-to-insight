@@ -1,21 +1,10 @@
 """
-How much do Whisper's transcription mistakes leak into the segmentation and
-summaries downstream?
+ASR-error analysis: run the models on the clean reference vs the Whisper transcript
+of a meeting and measure how much the output changes (WER, boundary drift, and with
+--summaries, summary drift).
 
-We run the same models on two versions of one meeting (the clean human reference
-vs. the Whisper transcript) and compare:
-  WER            how far off the ASR is (needs jiwer)
-  boundary drift segment both into N sections and measure how far the boundaries
-                 moved, normalized to [0,1] since the texts differ in length
-                 (0 means identical splits)
-  summary drift  with --summaries, summarize both and ROUGE them against each
-                 other. Slow, best with the fine-tuned checkpoint. Needs
-                 rouge-score.
-
-    python src/error_analysis.py                        # EN2001a, seg + WER
-    python src/error_analysis.py --num-sections 8 --summaries   # + summary drift
-
-Same flat-path import setup as pipeline.py (segmentation dir first).
+Usage:
+    python src/error_analysis.py --meetings EN2001a EN2001b EN2001d EN2001e EN2003a
 """
 import argparse
 import os

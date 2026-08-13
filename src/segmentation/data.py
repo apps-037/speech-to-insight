@@ -1,15 +1,7 @@
 """
-Turn QMSum meetings into per-turn topic-boundary labels for the segmenter.
+Turn QMSum meetings into per-turn topic-boundary labels (0/1) for the segmenter.
 
-Each meeting has `meeting_transcripts` (a list of {speaker, content} turns) and
-`topic_list`, where every topic has a `relevant_text_span` giving inclusive
-ranges of turn indices. We flatten that into one 0/1 label per turn: the first
-turn of each topic span is a boundary (1), everything else is 0.
-
-The spans overlap and don't tile the meeting cleanly, so we just take the
-sorted, de-duplicated span starts as the boundaries, which is the usual way to
-do it for this dataset. Run the file directly to eyeball one meeting's labels:
-
+Usage:
     python src/segmentation/data.py --split val --show 0
 """
 import argparse

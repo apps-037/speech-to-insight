@@ -1,26 +1,9 @@
 """
-Cut a raw meeting transcript into topic sections with the trained segmenter.
+Split a raw transcript into topic sections using the trained segmenter. This is
+the inference step used by the pipeline and the ASR-error analysis.
 
-This is the inference entry point. The train/eval scripts work on labeled QMSum
-turns; this one works on an unlabeled blob of text like transcribe.py produces.
-It's also the segmentation step in the ASR-error analysis (run it on the clean
-reference and the Whisper transcript, then compare).
-
-The flow is text -> sentences -> MiniLM embeddings -> BiLSTM boundary probs ->
-decode into sections. The model was trained on turns but a transcript has none,
-so we split into sentences instead. The probs aren't perfectly calibrated across
-that gap and the metric-tuned threshold under-segments, so the default decode is
-target-count: pick the strongest, spaced-out boundaries to get roughly one
-section per --target-len sentences. Pass --threshold to switch to plain
-probability-threshold decoding.
-
-    python src/segmentation/segment_transcript.py data/transcripts/EN2001a.txt
-    python src/segmentation/segment_transcript.py <file> --target-len 30 --full
-
-Called as a function, segment_transcript(text) hands back a list of section
-strings for the summarizer. A very long section can still blow past the
-summarizer's token limit, so chunk within it there (e.g. summarize.py's
-chunk_by_tokens).
+Usage:
+    python src/segmentation/segment_transcript.py <transcript.txt>
 """
 import argparse
 import os

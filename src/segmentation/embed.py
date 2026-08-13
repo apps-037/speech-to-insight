@@ -1,22 +1,8 @@
 """
-One-off step: embed every QMSum turn with a frozen sentence encoder and cache
-the vectors so the rest of segmentation runs on CPU in seconds.
+Embed the QMSum turns with MiniLM and cache the vectors, so training/eval stay fast.
 
-We load all-MiniLM-L6-v2 straight from `transformers`, mean-pool the token
-embeddings over the attention mask, then L2-normalize, which is the same recipe
-sentence-transformers uses. Going through transformers directly sidesteps the
-torchcodec/FFmpeg dependency that breaks sentence-transformers on this setup.
-The output is the usual 384-d normalized sentence vectors.
-
-Run it once per split (locally on Apple-Silicon MPS, or on a Colab GPU with the
-cache downloaded afterwards):
-
-    python src/segmentation/embed.py --split train
-    python src/segmentation/embed.py --split val
-    python src/segmentation/embed.py --split test
-
-Writes data/seg_cache/<split>.pt, one dict per meeting:
-    {"emb": FloatTensor[T, 384], "labels": LongTensor[T]}
+Usage:
+    python src/segmentation/embed.py --split train      # also val / test
 """
 import argparse
 import os

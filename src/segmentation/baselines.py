@@ -1,19 +1,9 @@
 """
-Simple unsupervised baselines to compare the trained BiLSTM against. Both use
-the same cached MiniLM embeddings, so it's a fair comparison.
+Two baselines to compare the trained BiLSTM against: never-split (predict no
+boundaries) and block-similarity (split where the meaning between windows drops).
 
-never-split just predicts one segment (no boundaries). It looks surprisingly
-strong on QMSum because boundaries are rare (~1% of turns).
-
-block-similarity is a TextTiling-style method: for each gap between turns it
-compares the average embedding of the w turns before against the w after, and a
-low cosine similarity means the topic probably shifted. We drop a boundary
-wherever that dissimilarity clears a threshold tuned on val, the same decode
-rule the trained model uses.
-
-    python src/segmentation/baselines.py       # tune block-sim on val, report on test
-
-Needs the val and test caches (src/segmentation/embed.py --split val / test).
+Usage:
+    python src/segmentation/baselines.py
 """
 import argparse
 import os

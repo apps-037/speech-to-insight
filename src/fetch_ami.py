@@ -1,15 +1,9 @@
 """
-Grab one AMI meeting off HuggingFace and stitch its clips back into a single wav.
+Download one AMI meeting from HuggingFace, stitch its clips into a single .wav, and
+save the reference transcript. Streams so it skips the full 29 GB download.
 
-The HF version (edinburghcstr/ami) is split into thousands of tiny utterance
-clips, but we want a whole meeting to transcribe and segment. So we stream just
-the rows for one meeting (no 29 GB download), sort them by start time, and
-concatenate them into one file under data/audio/.
-
-    python src/fetch_ami.py                # default meeting EN2001a
-    python src/fetch_ami.py ES2004a        # some other meeting id
-
-Needs: pip install datasets soundfile numpy
+Usage:
+    python src/fetch_ami.py EN2001a --full
 """
 
 import sys

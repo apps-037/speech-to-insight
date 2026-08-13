@@ -1,12 +1,9 @@
 """
-Draw the evaluation figures from reports/metrics.json.
+Draw the evaluation figures (segmentation, ROUGE, ASR) from reports/metrics.json into
+reports/figures/.
 
+Usage:
     python src/plots.py
-
-Saves segmentation.png (Pk / WindowDiff per method, lower is better) and
-rouge.png (ROUGE pretrained vs fine-tuned, higher is better) under
-reports/figures/. The actual numbers come from the eval scripts
-(src/segmentation/evaluate.py and src/summarization/evaluate.py), not from here.
 """
 import json
 import os

@@ -1,12 +1,8 @@
 """
-Train the BiLSTM topic segmenter on the cached QMSum embeddings.
+Train the BiLSTM segmenter on the cached QMSum embeddings and save the best
+checkpoint to models/segmenter.pt.
 
-Embed the train and val splits first (src/segmentation/embed.py). Training runs
-on the precomputed vectors, so it only takes a couple of minutes on CPU. Each
-epoch we retune the decode threshold on val (a fixed 0.5 over-segments because
-boundaries are so rare) and keep the best checkpoint, weights plus the chosen
-threshold, at models/segmenter.pt.
-
+Usage:
     python src/segmentation/train.py
 """
 import argparse

@@ -1,23 +1,9 @@
 """
-Runs the whole thing: transcript -> topic sections -> a summary per section,
-plus one overall summary.
+End-to-end pipeline: transcript -> topic sections -> a summary per section, plus one
+overall summary. Segmentation cuts the transcript, the summarizer writes the summaries.
 
-This is the glue between the two halves of the project. Segmentation
-(segment_transcript.py) cuts the transcript into sections, then summarization
-(summarize.py) summarizes each one and boils those down into a single summary.
-
-summarize.DEFAULT_MODEL points at the fine-tuned checkpoint
-(models/distilbart-qmsum) when it's there, otherwise the plain pretrained model,
-so this works either way and nothing here has to change.
-
-    python src/pipeline.py data/transcripts/EN2001a.txt --num-sections 6
-
-Summarization is the slow part (lots of beam search on CPU/MPS), so keep
---num-sections small on a first run.
-
-Both halves are run-as-script packages with flat imports, so we put each dir on
-sys.path (segmentation first, so its data/model/embed modules win over
-summarization's same-named ones) instead of importing them as packages.
+Usage:
+    python src/pipeline.py <transcript.txt> [--num-sections N] [--out notes.txt]
 """
 import argparse
 import os

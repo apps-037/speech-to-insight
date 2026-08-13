@@ -1,10 +1,6 @@
 """
-Our topic-segmentation model: a BiLSTM boundary classifier we train ourselves.
-
-It takes a sequence of frozen sentence embeddings (one per turn) and outputs a
-boundary logit for each turn. The pretrained encoder only gives us the input
-features; the classifier's weights are trained from scratch on QMSum, so this
-is genuinely our own model.
+Our topic-segmentation model: a BiLSTM boundary classifier over frozen sentence
+embeddings, trained from scratch on QMSum.
 """
 import torch.nn as nn
 

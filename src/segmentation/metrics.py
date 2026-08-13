@@ -1,14 +1,7 @@
 """
-Segmentation metrics: Pk and WindowDiff (lower is better for both).
-
-A segmentation is a 0/1 per unit, with 1 marking the start of a new segment. We
-turn that into the boundary strings nltk wants and set the window size `k` to
-half the average reference segment length, which is the usual convention. Both
-reference and hypothesis use the same representation, so the scores compare.
-
-We skip plain accuracy because boundaries are only ~2-3% of turns, so a model
-that never splits scores ~97% while being useless. Pk and WindowDiff don't fall
-for that.
+Segmentation metrics: Pk and WindowDiff (lower is better). We use these instead of
+accuracy, since boundaries are rare and a model that never splits would still look
+accurate.
 """
 import numpy as np
 from nltk.metrics.segmentation import pk as _pk, windowdiff as _windowdiff
