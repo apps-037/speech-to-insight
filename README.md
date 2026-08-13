@@ -1,6 +1,6 @@
 # Speech to Insight
 
-CS6120 NLP - Final Project. Based on idea #23, "Speech → NLP Downstream."
+CS6120 NLP - Final Project. "Speech → NLP Downstream."
 
 A pipeline that turns meeting/lecture audio into organized, readable output:
 
@@ -16,12 +16,7 @@ on (a) clean human transcripts and (b) Whisper transcripts of the same meetings.
 
 ## Scope
 
-Two downstream tasks: **topic segmentation** and **summarization**. (Intent 
-detection was an option in the project idea; we deliberately skipped it.)
-
-Per the professor's ruling, we do **not** train from scratch. Fine-tuning a model
-for our use case is acceptable; the only thing not allowed is running an existing
-model on a test set with no training at all.
+Two downstream tasks: **topic segmentation** and **summarization**.
 
 | Component                | Approach                                      | Trained by us?                |
 | ------------------------ | --------------------------------------------- | ----------------------------- |
@@ -36,13 +31,13 @@ model on a test set with no training at all.
   https://github.com/Yale-LILY/QMSum
 - **AMI** - audio, for running Whisper and the ASR-error analysis. It has both the
   audio and a clean human transcript for each meeting. We used 5 meetings (EN2001a,
-  EN2001b, EN2001d, EN2001e, EN2003a), not the whole 29 GB.
+  EN2001b, EN2001d, EN2001e, EN2003a), not the whole.
   https://huggingface.co/datasets/edinburghcstr/ami
 
 ## Repository layout
 
 ```
-demo.py                       # one-command demo: runs the whole pipeline on a sample meeting
+demo.py                       # one-command demo: runs the whole pipeline on predefind and user input
 
 src/fetch_ami.py              # AMI: stream one meeting from HF, stitch clips into a .wav
 src/transcribe.py             # Whisper (faster-whisper, base) audio → transcript .txt
@@ -75,7 +70,7 @@ models/                       # trained checkpoints (gitignored - too large)
 
 ## Progress
 
-**Done (speech-to-text half):**
+**Speech-to-Text:**
 
 - Python 3.12 environment; dependencies installed. (Python 3.14 breaks the ML libs.)
 - `src/fetch_ami.py`: streams one AMI meeting and stitches it into a single `.wav`,
@@ -84,7 +79,7 @@ models/                       # trained checkpoints (gitignored - too large)
 - Ran Whisper on 5 AMI meetings end to end (EN2001a, b, d, e and EN2003a), and kept
   each meeting's clean human transcript next to it for the error analysis.
 
-**Done (topic segmentation - trained):**
+**Topic Segmentation:**
 
 - `src/segmentation/data.py`: QMSum `topic_list` spans → per-turn 0/1 boundary
   labels (boundaries are only ~1% of turns - QMSum topics are coarse).
@@ -105,7 +100,7 @@ models/                       # trained checkpoints (gitignored - too large)
 - `src/segmentation/segment_transcript.py`: inference entry - splits a transcript into
   topic sections (windowed target-count decode).
 
-**Done (summarization - fine-tuned):**
+**Summarization - fine-tuned:**
 
 - `src/summarization/summarize.py`: turns a transcript into a summary. A meeting is
   longer than the model can read, so it summarizes the text in chunks and combines
@@ -131,13 +126,15 @@ models/                       # trained checkpoints (gitignored - too large)
   On the EN2001a Whisper transcript the fine-tuned model reads like real meeting
   notes, where the pretrained one gave choppy news-style text.
 
-**Done (end-to-end pipeline + ASR-error analysis):**
+**Pipeline + ASR-error analysis:**
 
 - `src/pipeline.py`: ties the two halves together. It takes a transcript, splits it into
   topic sections with our segmenter, summarizes each section with the fine-tuned model,
-  and adds one overall summary. If the fine-tuned checkpoint is there it uses it, otherwise
-  it falls back to the pretrained one. We use it to turn the AMI Whisper transcripts into
-  topic-wise notes (saved to `data/summaries/`).
+  and adds one overall summary. It uses the local fine-tuned checkpoint if it's there,
+  otherwise it downloads the same fine-tuned model from the HF Hub
+  (https://huggingface.co/appsaini602/distilbart-qmsum), so the summaries stay fine-tuned
+  quality. We use it to turn the AMI Whisper transcripts into topic-wise notes (saved to
+  `data/summaries/`).
 - `src/error_analysis.py`: our main analysis. We run the same segmenter on two versions of
   each meeting, the clean human transcript and the Whisper one, and check how much the
   output changes. The clean AMI transcript has no punctuation and Whisper adds it, so
@@ -159,12 +156,6 @@ models/                       # trained checkpoints (gitignored - too large)
 
   The summary side of this (ROUGE between the clean and Whisper summaries) runs with
   `--summaries`.
-
-**Next:**
-
-- Run the summary side of the error analysis (`error_analysis.py --summaries`) to see how
-  the ASR errors change the summaries, not just the segmentation.
-- Clean up the figures and finish the write-up.
 
 ## Setup
 
@@ -219,7 +210,7 @@ python src/pipeline.py data/transcripts/EN2001a.txt --num-sections 8 --out data/
 python src/error_analysis.py --meetings EN2001a EN2001b EN2001d EN2001e EN2003a --num-sections 8
 ```
 
-Run the unit tests (fast, no model needed):
+Run the unit tests:
 
 ```bash
 python tests/test_segmentation.py
