@@ -1,16 +1,12 @@
 """
-Generate the evaluation figures from reports/metrics.json.
+Draw the evaluation figures from reports/metrics.json.
 
     python src/plots.py
 
-Writes:
-  reports/figures/segmentation.png   Pk / WindowDiff by method (lower is better)
-  reports/figures/rouge.png          ROUGE pretrained vs fine-tuned (higher is better)
-
-The numbers come from the eval scripts, not from this file:
-  - segmentation: src/segmentation/evaluate.py --save reports/metrics.json
-    (embedding-similarity baseline recorded from src/segmentation/baselines.py)
-  - rouge:        src/summarization/evaluate.py (recorded)
+Saves segmentation.png (Pk / WindowDiff per method, lower is better) and
+rouge.png (ROUGE pretrained vs fine-tuned, higher is better) under
+reports/figures/. The actual numbers come from the eval scripts
+(src/segmentation/evaluate.py and src/summarization/evaluate.py), not from here.
 """
 import json
 import os

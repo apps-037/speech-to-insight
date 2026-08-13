@@ -1,27 +1,23 @@
 """
-End-to-end meeting pipeline: transcript -> topic sections -> per-section
-summaries + one overall summary.
+Runs the whole thing: transcript -> topic sections -> a summary per section,
+plus one overall summary.
 
-Glue connecting the two halves of the project:
-  - segmentation (src/segmentation/segment_transcript.py) cuts the transcript
-    into topic sections;
-  - summarization (src/summarization/summarize.py) summarizes each section, then
-    reduces the section summaries into one overall summary.
+This is the glue between the two halves of the project. Segmentation
+(segment_transcript.py) cuts the transcript into sections, then summarization
+(summarize.py) summarizes each one and boils those down into a single summary.
 
-The summarizer is used as-is: `summarize.DEFAULT_MODEL` resolves to the
-fine-tuned checkpoint (models/distilbart-qmsum) if it exists, else the
-pretrained baseline. So this runs today on the pretrained model and upgrades for
-free once the fine-tuned checkpoint is in place - nothing here changes.
+summarize.DEFAULT_MODEL points at the fine-tuned checkpoint
+(models/distilbart-qmsum) when it's there, otherwise the plain pretrained model,
+so this works either way and nothing here has to change.
 
     python src/pipeline.py data/transcripts/EN2001a.txt --num-sections 6
 
-Heads-up: summarization is the heavy step (many beam-search generations on CPU/
-MPS). Keep --num-sections small for a first run.
+Summarization is the slow part (lots of beam search on CPU/MPS), so keep
+--num-sections small on a first run.
 
-Imports: both halves are run-as-script packages using flat sibling imports, so
-we put each package dir on sys.path (segmentation first, so its `data`/`model`/
-`embed` win over summarization's same-named modules) rather than importing them
-as packages.
+Both halves are run-as-script packages with flat imports, so we put each dir on
+sys.path (segmentation first, so its data/model/embed modules win over
+summarization's same-named ones) instead of importing them as packages.
 """
 import argparse
 import os
@@ -29,7 +25,7 @@ import sys
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(_HERE, "summarization"))
-sys.path.insert(0, os.path.join(_HERE, "segmentation"))   # inserted last -> first on path
+sys.path.insert(0, os.path.join(_HERE, "segmentation"))   # last insert lands first on the path
 
 from segment_transcript import segment_text, load_model as load_segmenter, Embedder, pick_device  # noqa: E402
 import summarize  # noqa: E402

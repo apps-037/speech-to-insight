@@ -1,21 +1,14 @@
 """
-demo.py - a standalone demo of the Speech-to-Insight pipeline (audio -> topic notes).
+Quick end-to-end demo: audio (or a transcript) goes in, topic notes come out.
 
-Two ways to run it:
+Ways to run it:
+    python demo.py                          # runs on the bundled sample meeting
+    python demo.py path/to/audio.wav        # audio -> transcript -> notes
+    python demo.py path/to/transcript.txt   # skips straight to notes
 
-  1. Pre-defined input (no arguments) - runs on a bundled sample meeting:
-       python demo.py
-
-  2. Your own input:
-       python demo.py path/to/audio.wav        # audio -> transcript -> topic notes
-       python demo.py path/to/transcript.txt   # transcript -> topic notes
-
-Audio inputs (.wav, .mp3, ...) are transcribed with Whisper first; .txt inputs are
-treated as a transcript and go straight to segmentation + summarization.
-
-Needs the trained segmenter at models/segmenter.pt. The summarizer uses the local
-fine-tuned checkpoint if present, otherwise it downloads our fine-tuned copy from
-the HF Hub.
+Audio files get transcribed with Whisper first; .txt files are used as-is. You
+need the trained segmenter at models/segmenter.pt. The summarizer uses the local
+fine-tuned checkpoint if it's there, otherwise it pulls our copy off the HF Hub.
 """
 import os
 import sys
@@ -23,18 +16,18 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "src"))
 
-SAMPLE_AUDIO = "data/audio/EN2003a.wav"              # pre-defined input (a full meeting)
-SAMPLE_TRANSCRIPT = "data/transcripts/EN2003a.txt"   # fallback if the audio isn't present
+SAMPLE_AUDIO = "data/audio/EN2003a.wav"              # the bundled sample meeting
+SAMPLE_TRANSCRIPT = "data/transcripts/EN2003a.txt"   # used if the audio isn't there
 SEG_CKPT = "models/segmenter.pt"
 AUDIO_EXT = (".wav", ".mp3", ".m4a", ".flac", ".ogg")
 
 
 def choose_input():
     if len(sys.argv) > 1:
-        return sys.argv[1]                 # user-provided input
+        return sys.argv[1]                 # whatever the user passed
     if os.path.exists(SAMPLE_AUDIO):
-        return SAMPLE_AUDIO                # pre-defined input (audio)
-    return SAMPLE_TRANSCRIPT               # pre-defined fallback (transcript)
+        return SAMPLE_AUDIO                # default to the sample audio
+    return SAMPLE_TRANSCRIPT               # or its transcript if audio is missing
 
 
 def main():
@@ -48,11 +41,11 @@ def main():
         print("[demo] Pass an audio file or a transcript:  python demo.py <path>")
         sys.exit(1)
 
-    # audio -> transcribe with Whisper first; text -> use it as the transcript
+    # if it's audio, transcribe it first; if it's text, it's already a transcript
     if inp.lower().endswith(AUDIO_EXT):
         import transcribe
         print(f"[demo] Transcribing audio with Whisper (the slow step): {inp}")
-        transcribe.transcribe(inp, verbose=False)   # quiet: no per-segment flood
+        transcribe.transcribe(inp, verbose=False)   # quiet so it doesn't spam segments
         base = os.path.splitext(os.path.basename(inp))[0]
         transcript = f"data/transcripts/{base}.txt"
     else:

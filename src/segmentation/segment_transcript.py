@@ -1,29 +1,26 @@
 """
-Turn a raw meeting transcript into topic sections using the trained segmenter.
+Cut a raw meeting transcript into topic sections with the trained segmenter.
 
-This is the product/inference entry point. The train/eval scripts work on
-labeled QMSum *turns*; this one works on an unlabeled transcript blob like
-transcribe.py produces. It's also the segmentation step for the ASR-error
-analysis: run it on the clean reference vs. the Whisper transcript and compare.
+This is the inference entry point. The train/eval scripts work on labeled QMSum
+turns; this one works on an unlabeled blob of text like transcribe.py produces.
+It's also the segmentation step in the ASR-error analysis (run it on the clean
+reference and the Whisper transcript, then compare).
 
-Pipeline:  transcript text -> sentences -> MiniLM embeddings -> BiLSTM boundary
-probs -> decode into sections.
-
-Train/inference granularity gap: the model was trained on QMSum turns, but a
-transcript blob has no turns, so we split into sentences. The model consumes a
-sequence of embeddings either way. Because the boundary probabilities aren't
-perfectly calibrated across that gap (and the metric-tuned threshold
-under-segments), the DEFAULT decode is TARGET-COUNT: take the most-likely
-boundary points, spaced out, to make ~1 section per --target-len sentences. Use
---threshold to switch to probability-threshold decoding instead.
+The flow is text -> sentences -> MiniLM embeddings -> BiLSTM boundary probs ->
+decode into sections. The model was trained on turns but a transcript has none,
+so we split into sentences instead. The probs aren't perfectly calibrated across
+that gap and the metric-tuned threshold under-segments, so the default decode is
+target-count: pick the strongest, spaced-out boundaries to get roughly one
+section per --target-len sentences. Pass --threshold to switch to plain
+probability-threshold decoding.
 
     python src/segmentation/segment_transcript.py data/transcripts/EN2001a.txt
     python src/segmentation/segment_transcript.py <file> --target-len 30 --full
 
-As a function, segment_transcript(text) returns a list of section strings, so the
-summarizer can summarize each section. A very long section may still exceed the
-summarizer's token limit - token-chunk within each section there (e.g. with
-summarize.py's chunk_by_tokens).
+Called as a function, segment_transcript(text) hands back a list of section
+strings for the summarizer. A very long section can still blow past the
+summarizer's token limit, so chunk within it there (e.g. summarize.py's
+chunk_by_tokens).
 """
 import argparse
 import os
@@ -56,15 +53,15 @@ def split_sentences(text):
 
 def decode_boundaries(probs, target_len=40, num_sections=None, min_gap=3,
                       threshold=None):
-    """Sorted boundary sentence indices (always includes 0).
+    """Sorted boundary sentence indices (0 is always in there).
 
-    threshold mode: every position whose prob exceeds `threshold`.
-    target-count mode (default): split the meeting into ~num_sections evenly
-    spaced windows (num_sections defaults to len / target_len) and snap each
-    boundary to the highest-probability sentence within its window. This keeps
-    sections balanced while still letting the model choose *where* each split
-    lands - and it degrades gracefully to even splits when the model has little
-    signal (e.g. free-flowing meetings with no explicit topic markers).
+    In threshold mode, every position whose prob beats `threshold` is a
+    boundary. In target-count mode (the default) we split the meeting into
+    ~num_sections evenly spaced windows (num_sections defaults to len /
+    target_len) and snap each boundary to the highest-prob sentence inside its
+    window. That keeps sections roughly balanced while still letting the model
+    pick where each split lands, and it falls back to even splits when the model
+    has little signal (e.g. a rambly meeting with no clear topic markers).
     """
     probs = np.asarray(probs)
     n = len(probs)

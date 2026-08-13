@@ -1,19 +1,15 @@
 """
-Fetch a single AMI meeting from HuggingFace and reconstruct it into one audio file.
+Grab one AMI meeting off HuggingFace and stitch its clips back into a single wav.
 
-AMI on HuggingFace (edinburghcstr/ami) is pre-chunked into thousands of tiny
-utterance clips. For our project we want a *full meeting* to transcribe and later
-segment, so this script:
-  1. streams only the rows for ONE meeting (no 29 GB download)
-  2. sorts the clips by their start time
-  3. concatenates them into a single .wav file in data/audio/
+The HF version (edinburghcstr/ami) is split into thousands of tiny utterance
+clips, but we want a whole meeting to transcribe and segment. So we stream just
+the rows for one meeting (no 29 GB download), sort them by start time, and
+concatenate them into one file under data/audio/.
 
-Usage:
-    python src/fetch_ami.py                # uses default meeting EN2001a
-    python src/fetch_ami.py ES2004a        # pick a different meeting id
+    python src/fetch_ami.py                # default meeting EN2001a
+    python src/fetch_ami.py ES2004a        # some other meeting id
 
-Requirements (add to your venv):
-    pip install datasets soundfile numpy
+Needs: pip install datasets soundfile numpy
 """
 
 import sys
@@ -70,13 +66,13 @@ def fetch_meeting(meeting_id, full=False):
 
     print(f"Found {len(clips)} clips. Sorting and stitching...")
 
-    # Sort clips into chronological order using their start time
+    # put the clips back in time order
     clips.sort(key=lambda c: c["begin"])
 
-    # Concatenate all clip audio into one long array
+    # glue all the clip audio into one long array
     full_audio = np.concatenate([c["audio"] for c in clips])
 
-    # Save the reconstructed meeting audio
+    # write out the reconstructed meeting audio
     os.makedirs("data/audio", exist_ok=True)
     suffix = "" if full else "_sample"
     out_audio = f"data/audio/{meeting_id}{suffix}.wav"
@@ -85,8 +81,8 @@ def fetch_meeting(meeting_id, full=False):
     duration_min = len(full_audio) / SAMPLING_RATE / 60
     print(f"Saved {out_audio}  (~{duration_min:.1f} minutes of audio)")
 
-    # Also save the reference transcript (AMI's own human transcript).
-    # This is your "clean" transcript for the ASR-error comparison later.
+    # also dump AMI's own human transcript. we use it as the "clean" text
+    # to compare against the Whisper output in the ASR-error analysis.
     os.makedirs("data/reference", exist_ok=True)
     out_ref = f"data/reference/{meeting_id}.txt"
     with open(out_ref, "w") as f:

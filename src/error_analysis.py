@@ -1,23 +1,21 @@
 """
-ASR-error propagation analysis: how much do Whisper's transcription mistakes
-change the downstream segmentation and summaries?
+How much do Whisper's transcription mistakes leak into the segmentation and
+summaries downstream?
 
-Runs the same models on two versions of ONE meeting - the clean human reference
-transcript vs. the Whisper transcript - and compares the outputs:
-
-  input degradation   WER(clean, whisper)   how bad the ASR is (needs `jiwer`)
-  segmentation drift   segment both into the same N sections, compare boundary
-                       positions normalized to [0,1] (the two texts differ in
-                       length). 0 = identical splits; higher = splits moved.
-  summary drift        (--summaries) summarize both, ROUGE(whisper-summary vs
-                       clean-summary) = how much the summary content changed.
-                       Heavy; best run with the fine-tuned checkpoint. Needs
-                       `rouge-score`.
+We run the same models on two versions of one meeting (the clean human reference
+vs. the Whisper transcript) and compare:
+  WER            how far off the ASR is (needs jiwer)
+  boundary drift segment both into N sections and measure how far the boundaries
+                 moved, normalized to [0,1] since the texts differ in length
+                 (0 means identical splits)
+  summary drift  with --summaries, summarize both and ROUGE them against each
+                 other. Slow, best with the fine-tuned checkpoint. Needs
+                 rouge-score.
 
     python src/error_analysis.py                        # EN2001a, seg + WER
     python src/error_analysis.py --num-sections 8 --summaries   # + summary drift
 
-Imports: same flat-path setup as pipeline.py (segmentation dir first).
+Same flat-path import setup as pipeline.py (segmentation dir first).
 """
 import argparse
 import os
@@ -46,9 +44,9 @@ def _norm(s):
 
 
 def split_words(text, per=25):
-    """Split into fixed windows of `per` words - punctuation-agnostic units so
-    the clean (unpunctuated) and Whisper transcripts are compared on equal
-    footing (the AMI reference has no punctuation; Whisper adds it)."""
+    """Chop the text into fixed windows of `per` words. Word windows keep the
+    comparison fair, since the AMI reference has no punctuation but Whisper
+    adds it."""
     words = text.split()
     return [" ".join(words[i:i + per]) for i in range(0, len(words), per)] or [text]
 
@@ -67,8 +65,8 @@ def norm_positions(bounds, n):
 
 
 def segmentation_drift(clean_b, clean_n, whisper_b, whisper_n):
-    """Mean nearest-neighbour distance between the two sets of boundary
-    positions (normalized to [0,1]). 0 = splits at the same relative places."""
+    """Average distance from each clean boundary to the nearest Whisper one,
+    with positions normalized to [0,1]. 0 means the splits line up."""
     c, w = norm_positions(clean_b, clean_n), norm_positions(whisper_b, whisper_n)
     if not c or not w:
         return None
@@ -188,8 +186,8 @@ def main():
     else:
         print(f"INPUT  WER(clean, whisper) = {wer:.3f}  ({wer * 100:.1f}% of words changed)")
 
-    # 2. segmentation drift - fixed word-windows so the clean (unpunctuated) and
-    #    Whisper (punctuated) transcripts are segmented on equal footing.
+    # 2. boundary drift. fixed word-windows so the unpunctuated clean text and
+    #    the punctuated Whisper text get segmented on the same footing.
     print("\nsegmenting both transcripts (fixed word-windows) ...")
     seg_model = load_segmenter(args.seg_ckpt, device)
     embedder = Embedder(device)

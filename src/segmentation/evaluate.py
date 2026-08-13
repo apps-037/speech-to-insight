@@ -1,9 +1,9 @@
 """
 Evaluate the trained BiLSTM segmenter on the QMSum test split.
 
-Loads the checkpoint from train.py (weights + the decode threshold chosen on
-validation) and reports Pk / WindowDiff on test - the numbers for the report -
-alongside the never-split baseline for context.
+Loads the checkpoint from train.py (weights plus the decode threshold picked on
+val) and prints Pk / WindowDiff on test, the numbers we report, next to the
+never-split baseline for context.
 
     python src/segmentation/evaluate.py
     python src/segmentation/evaluate.py --save reports/metrics.json   # record for plots

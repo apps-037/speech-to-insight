@@ -1,24 +1,22 @@
 """
-One-time step: embed every QMSum turn with a frozen sentence encoder and cache
-the vectors to disk.
+One-off step: embed every QMSum turn with a frozen sentence encoder and cache
+the vectors so the rest of segmentation runs on CPU in seconds.
 
-We load all-MiniLM-L6-v2 directly through `transformers` (mean-pool the token
-embeddings over the attention mask, then L2-normalize - exactly what
-sentence-transformers does under the hood). This avoids sentence-transformers'
-torchcodec/FFmpeg dependency, which breaks on this setup. The output is
-identical: 384-d normalized sentence vectors.
+We load all-MiniLM-L6-v2 straight from `transformers`, mean-pool the token
+embeddings over the attention mask, then L2-normalize, which is the same recipe
+sentence-transformers uses. Going through transformers directly sidesteps the
+torchcodec/FFmpeg dependency that breaks sentence-transformers on this setup.
+The output is the usual 384-d normalized sentence vectors.
 
-This is the only GPU-worth-it part of segmentation. Run it once (locally on
-Apple-Silicon MPS, or on a Colab GPU and download the cache), then every other
-script trains/evaluates on the cached vectors in seconds on CPU.
+Run it once per split (locally on Apple-Silicon MPS, or on a Colab GPU with the
+cache downloaded afterwards):
 
     python src/segmentation/embed.py --split train
     python src/segmentation/embed.py --split val
     python src/segmentation/embed.py --split test
 
-Writes data/seg_cache/<split>.pt = list of dicts
+Writes data/seg_cache/<split>.pt, one dict per meeting:
     {"emb": FloatTensor[T, 384], "labels": LongTensor[T]}
-one per meeting.
 """
 import argparse
 import os
@@ -44,8 +42,8 @@ def pick_device(arg):
 
 
 class Embedder:
-    """all-MiniLM-L6-v2 via transformers: mean-pool token embeddings over the
-    attention mask, then L2-normalize (the sentence-transformers recipe)."""
+    """all-MiniLM-L6-v2 through transformers: mean-pool the token embeddings over
+    the attention mask, then L2-normalize (same as sentence-transformers)."""
 
     def __init__(self, device):
         self.device = device

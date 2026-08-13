@@ -1,14 +1,15 @@
 """
-Unsupervised baselines for topic segmentation, to compare against the trained
-BiLSTM. Both run on the same cached MiniLM embeddings, so it's apples-to-apples.
+Simple unsupervised baselines to compare the trained BiLSTM against. Both use
+the same cached MiniLM embeddings, so it's a fair comparison.
 
-  - never-split: predict a single segment (no boundaries). Deceptively strong on
-    QMSum because boundaries are rare (~1% of turns).
-  - block-similarity: a TextTiling-style method. For each gap between turns,
-    compare the average embedding of the w turns before vs. the w turns after; a
-    low cosine similarity means the topic likely shifted. We place a boundary
-    where the dissimilarity exceeds a threshold tuned on validation - the same
-    decode rule the trained model uses, so it's a fair comparison.
+never-split just predicts one segment (no boundaries). It looks surprisingly
+strong on QMSum because boundaries are rare (~1% of turns).
+
+block-similarity is a TextTiling-style method: for each gap between turns it
+compares the average embedding of the w turns before against the w after, and a
+low cosine similarity means the topic probably shifted. We drop a boundary
+wherever that dissimilarity clears a threshold tuned on val, the same decode
+rule the trained model uses.
 
     python src/segmentation/baselines.py       # tune block-sim on val, report on test
 
@@ -40,11 +41,12 @@ def never_split(n):
 
 
 def block_similarity_scores(emb, w=5):
-    """Per-gap dissimilarity 1 - cos(mean of w turns before, w turns after).
+    """Per-gap dissimilarity: 1 minus the cosine of (mean of the w turns before,
+    mean of the w turns after).
 
-    Returns a [T] array; score[i] is the dissimilarity at the gap before turn i
-    (higher = more likely a boundary). score[0] = inf so turn 0 always opens a
-    segment, matching the model's decode.
+    Returns a [T] array where score[i] is the dissimilarity in the gap before
+    turn i (higher means more likely a boundary). score[0] is inf so turn 0
+    always opens a segment, matching the model's decode.
     """
     e = emb.numpy() if hasattr(emb, "numpy") else np.asarray(emb)
     T = len(e)
@@ -59,7 +61,8 @@ def block_similarity_scores(emb, w=5):
 
 
 def precompute(data, w):
-    """[(labels, per-gap scores), ...] - computed once, then swept over."""
+    """Returns [(labels, per-gap scores), ...], computed once so the threshold
+    sweep can reuse them."""
     return [(m["labels"].tolist(), block_similarity_scores(m["emb"], w))
             for m in data]
 
