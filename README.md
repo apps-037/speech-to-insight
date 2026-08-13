@@ -174,6 +174,14 @@ pip install nltk jiwer
 
 ### Quick demo
 
+For a quick demo:
+
+```bash
+python3.12 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python demo.py
+```
+
 `demo.py` runs the whole pipeline (audio -> topic notes). Two ways to run it:
 
 ```bash
