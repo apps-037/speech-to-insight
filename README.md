@@ -64,6 +64,7 @@ src/error_analysis.py         # ASR error analysis: clean vs Whisper (WER + how 
 src/plots.py                  # makes the results figures from reports/metrics.json
 
 tests/test_summarize.py       # unit tests for the summarization package (chunking + data prep)
+tests/test_segmentation.py    # unit tests for the segmentation package (labels, metrics, decoding)
 data/audio/                   # AMI .wav files (gitignored)
 data/transcripts/             # Whisper transcripts
 data/reference/               # clean human reference transcripts (for error analysis)
@@ -216,6 +217,13 @@ python src/pipeline.py data/transcripts/EN2001a.txt --num-sections 8 --out data/
 
 # ASR-error propagation across several meetings
 python src/error_analysis.py --meetings EN2001a EN2001b EN2001d EN2001e EN2003a --num-sections 8
+```
+
+Run the unit tests (fast, no model needed):
+
+```bash
+python tests/test_segmentation.py
+python tests/test_summarize.py
 ```
 
 ## Notes
